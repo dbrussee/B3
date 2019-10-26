@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="/style/Bui/Bui.css">
+    <link rel="stylesheet" type="text/css" href="/style/bcnc.css">
+    <script src='/js/B.js'></script>
+    <script>
+    function init() {
+        window.tblA = new B.Table("tblA", "tblA", "col1,col2,col3", "row","rows");
+        tblA.onclick = function(td, tr, rd, cells, changed) {
+            showMessage("Clicked row " + tr.rowIndex);
+        }
+        tblA.ondblclick = function(td, tr, rd, cells) {
+            showMessage("You double-clicked on the row number " + tr.rowIndex);
+        }
+        tblA.setTableHeight("200px");
+        tblA.footer.addButton("add", "Add Row", null);
+        tblA.footer.addButton("b1", "My Button", function() {
+            showMessage("You clicked My Button");
+        }, true).disable();
+        tblA.addRow("1. First Column", "Second", "Third");
+        tblA.addRow("2. First Column", "Second", "Third");
+        tblA.addRow("3. First Column", "Second", "Third");
+        tblA.addRow("4. First Column", "Second", "Third");
+        tblA.addRow("5. First Column", "Second", "Third");
+        tblA.addRow("6. First Column", "Second", "Third");
+        tblA.addRow("7. First Column", "Second", "Third");
+        tblA.addRow("8. First Column", "Second", "Third");
+        tblA.addRow("9. First Column", "Second", "Third");
+        tblA.addRow("10. First Column", "Second", "Third");
+
+        setTestButton();
+    }
+    function test() {
+        var frm = new B.getForm("frmA");
+        var chk = frm.get();
+        var msg = "Hello, " + chk.fname + ". ";
+        msg += "You have" + (chk.agree ? " read " : " NOT read ");
+        msg += "the agreement.";
+        //alert(msg);
+        frm.set("lname", "Brussee the great");
+        var didIChange = B.util.compare(chk, frm.get());
+        if (didIChange) {
+            showMessage("Content did not change");
+        } else {
+            showMessage("Content changed");
+        }
+    }
+    function setTestButton() {
+        var isSet = B.getForm("frmA").get().agree;
+        var btn = document.getElementById("btnTest");
+        btn.disabled = !isSet;
+    }
+
+    function showMessage(msg) {
+        document.getElementById("locInfo").innerHTML = msg;
+    }
+    
+    </script>
+</head>
+<body onload='init()'>
+    <div style="width: 500px;" class="center">
+        <form name='frmA'>
+            <table class='form'>
+                <tr><th>First Name:</th><td><input name='fname' value='Daniel'></td></tr>
+                <tr><th>Last Name:</th><td><input name='lname' value='Brussee'></td></tr>
+                <tr><th>Agree:</th><td><label class='tog'><input onchange='setTestButton()' name='agree' type='checkbox'><i></i> (Agree to terms)</label></td></tr>
+            </table>
+            <button id='btnTest' onclick='test()'>Test</button>
+        </form>
+        <br><br>
+        <table id='tblA'>
+            <tr><th data='col1,200'>Column 1</th>
+                <th data='col2,80'>Col 2</th>
+                <th data='col2,180'>Col 3</th></tr>
+
+        </table>
+        <div id='locInfo'></div>
+    </div>
+       
+</body>
+</html>

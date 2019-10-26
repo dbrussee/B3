@@ -1,0 +1,206 @@
+/* CUSTOM RADIO & CHECKBOXES http://stackoverflow.com/a/17541916/383904 */
+.rad, 
+.tog,
+.chk, .chb {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    transform: translate(0, .19em);
+    > input { /* HIDE ORG RADIO & CHECKBOX */
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    > i { /* DEFAULT <i> STYLE */
+        display: inline-block;
+        vertical-align: middle;
+        width:  $radckb-size;
+        height: $radckb-size;
+        border-radius: 50%;
+       /* transition: 0.2s; */
+        box-shadow: inset 0 0 0 8px #fff;
+        border: 1px solid $input-border;
+        margin-top: $radckb-size * .2;
+        margin-bottom: $radckb-size * .2;
+    }
+    > input:disabled + i {
+        border: 1px solid $input-border-disabled;
+    }
+}
+.tog { /* CHECKBOX OVERWRITE STYLES */
+    @mixin disp {
+        border: 1px solid $input-border;
+        background: transparent;
+        box-shadow: 0;
+    }
+    @mixin dispC {
+        border: 1px solid transparent;
+        background: $input-checked;
+        box-shadow: 0;
+    }
+    @mixin dispD {
+        border: 1px solid $input-border-disabled;
+        background: transparent;       
+        box-shadow: 0;
+    }
+    @mixin dispDC {
+        border: 1px solid transparent;
+        background: $input-checked-disabled;
+        box-shadow: 0;
+    }
+    > i {
+        display: inline-block;
+        transform: translate(0, -.1em);
+        width: $radckb-size * 1.5;
+        border-radius: $radckb-size / 2;    
+    }
+    > input + i:after {
+        content: "";
+        display: inline-block;
+        transform: translate(0, -.1em);
+        height: $radckb-size * .5;
+        width:  $radckb-size * .5;
+        margin-left: $radckb-size * .12;
+        margin-top: $radckb-size * .15;
+        border-radius: 50%;
+        transition: inherit;
+        @include disp;
+    }
+    > input:checked + i:after { /* (RADIO CHECKED) <i> STYLE */
+        margin-left: $radckb-size * .7;
+        @include dispC;
+    }
+    > input:disabled + i:after {@include dispD;}
+    > input:disabled:checked + i:after {  @include dispDC; }
+    &:hover {
+        > input + i:after {
+            @include disp;
+            box-shadow: .4em 0 $input-checked-disabled;
+        }
+        > input:checked + i:after {
+            @include dispC;
+            border: 1px solid $input-border;
+            box-shadow: -.4em 0 $input-checked-disabled;
+        }
+        > input:disabled + i:after { 
+            margin-left: $radckb-size * .12; 
+            @include dispD;
+            box-shadow: 0 0;
+        }
+        > input:disabled:checked + i:after {
+            margin-left: $radckb-size * .7;
+            @include dispDC;
+            box-shadow: 0 0;
+        }
+    }
+
+}
+.rad {
+    @mixin disp {
+        box-shadow: inset 0 0 0 $radckb-size * .5 #fff;
+    }
+    @mixin dispC {
+        box-shadow: inset 0 0 0 $radckb-size * .2 #fff;
+        background: $input-checked;    
+    }
+    @mixin dispD {
+        box-shadow: inset 0 0 0 $radckb-size * .5 #fff;
+    }
+    @mixin dispDC {
+        box-shadow: inset 0 0 0 $radckb-size * .2 #fff;
+        background: $input-checked-disabled;    
+    }
+    &:hover {
+        > input + i { @include dispDC; }
+        > input:checked + i { @include dispC; }
+        > input:disabled + i { @include dispD; }
+        > input:checked:disabled + i { @include dispDC; }
+    }
+    > input + i {
+        display: inline-block;
+        transform: translate(0, -.1em);
+        @include disp;
+    }
+    > input:checked + i { @include dispC; }
+    > input:disabled + i { @include dispD; }
+    > input:checked:disabled + i { @include dispDC; }
+}
+.chb {
+    @mixin disp {
+        box-shadow: inset 0 0 0 $radckb-size * .2 #fff;    
+    }
+    @mixin dispC {
+        background: $input-checked;   
+    }
+    @mixin dispD {
+        box-shadow: inset 0 0 0 $radckb-size * .2 white;    
+        background: white; 
+    }
+    @mixin dispDC {
+        box-shadow: inset 0 0 0 $radckb-size * .2 #fff;    
+        background: $input-checked-disabled;    
+    }
+    > input {
+        + i {
+            display: inline-block;
+            transform: translate(0, -.1em);
+            border-radius: .1em;
+            @include disp;
+        }
+        &:checked + i { @include dispC; }
+        &:disabled + i { @include dispD;    }
+        &:disabled:checked + i { @include dispDC; }
+    }
+    &:hover {
+        > input + i { @include dispDC; }
+        > input:checked + i { @include dispC; }
+        > input:disabled + i { @include dispD; }
+        > input:disabled:checked + i { @include dispDC; }
+    }
+}
+.chk {
+    @mixin disp {
+        border-color: transparent;     
+    }
+    @mixin dispC {
+        border-color: $input-checked;  
+    }
+    @mixin dispD {
+        border-color: transparent;  
+    }
+    @mixin dispDC {
+        border-color: $input-checked-disabled;   
+    }
+    > input + i {
+        display: inline-block;
+        transform: translate(0, -.1em);
+        border-radius: .1em;
+        box-shadow: inset 0 0 0 2.5px #fff;
+    }
+    > input + i:before {
+        content: '';
+        position: absolute;
+        left: $radckb-size * .13;
+        top: $radckb-size * .22;
+        background: transparent;
+        width: $radckb-size * .5;
+        height: $radckb-size * .2;
+        border: {
+            left: $radckb-size / 5 solid transparent;
+            bottom: $radckb-size / 6 solid transparent;
+            right: 0;
+            top: 0;
+        }
+        transform: rotate(-62deg); 
+        @include disp;
+    }
+    > input:checked + i:before { @include dispC; }
+    > input:disabled:checked + i:before { @include dispDC; }
+    &:hover {
+        > input + i:before { @include dispDC; }
+        > input:checked + i:before { @include dispC; }
+        > input:disabled + i:before { @include dispD; }
+        > input:disabled:checked + i:before { @include dispDC; }
+    }
+}

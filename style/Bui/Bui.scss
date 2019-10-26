@@ -1,0 +1,27 @@
+@import "vars";
+@import "radios";
+@import "other_form";
+@import "tables";
+
+* {
+    /* background-color: rgb(39, 41, 41);
+    color: white; */
+    box-sizing: border-box;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 12pt;
+}
+
+.errorMarker {
+    border-right: .3em solid red !important;
+    /*box-shadow: 0 0 .5em red inset;
+    border: 1px solid brown !important; */
+}
+.warningMarker {
+    border-right: .3em solid gold!important;
+    /*box-shadow: 0 0 .5em yellow inset;
+    border: 1px solid goldenrod !important;*/
+}
+.centerme {
+    position: relative;
+    margin: 0 auto;
+}

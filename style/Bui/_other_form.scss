@@ -1,0 +1,190 @@
+
+select {
+    padding: {
+        top: .1em;
+        bottom: .15em;
+        left: .2em;
+    };
+    border: 1px solid navy;
+    border-radius: .2em;
+    &:disabled {
+        background-image: $buttonGradientDisabled;
+        border: 1px solid dimgray;
+    }
+    background-image: $buttonGradient;
+    option {
+        font-size: 1em;
+    }
+    &:disabled {
+        color: gray;
+    }
+}
+input:not([type]), 
+textarea,
+input[type="text"] {
+    padding-left: .2em;
+    padding-top: .15em;
+    border: {
+        left: 0;
+        top: 0;
+        bottom: 1px solid $input-border;
+        right: 0;
+    }
+    &:disabled {
+        color: gray;
+        background-color: snow;
+    }
+    &.required {
+        background-image: linear-gradient(45deg, transparent, transparent 50%, red 50%, red 100%);
+        background-position: top right;
+        background-size: .6em .6em;
+        background-repeat: no-repeat;
+    }
+}
+textarea {
+    border: 1px solid $input-border;
+    &:disabled {
+        border-color: $input-border-disabled;
+    }
+}
+
+button,
+input[type="submit"],
+input[type="reset"],
+.BTableFooterButton {
+    font-size: .9em;
+    background-image: $buttonGradient;
+    border: 1px solid navy;
+    color: black;
+    border-radius: .3em;
+    padding: {
+        left: .6em;
+        right: .6em;
+        top: .2em;
+        bottom: .2em;
+    }
+    &:hover,
+    &:focus,
+    &:active {
+        box-shadow: 0 0 5px black;
+        border: 1px solid dodgerblue;
+    }
+    &:active {
+        background-image: $buttonGradientActive;
+    }
+    &:disabled {
+        background-image: $buttonGradientDisabled;
+        border: 1px solid dimgray;
+        color: gray;
+        &:hover,
+        &:focus,
+        &:active {
+            box-shadow: inherit;
+            border: 1px solid dimgray;
+        }
+    }
+}
+table.data {
+    border-collapse: collapse;
+    tr th {
+        border: 0;
+        text-align: left;
+        color: white;
+        text-shadow: $tshadow1;
+        vertical-align: baseline;
+        padding-left: .3em;
+        padding-bottom: .25em;
+        padding-top: .15em;
+        font-weight: normal;
+    }
+    tr td {
+        padding-left: .3em;
+        font-size: 8pt;
+        vertical-align: baseline;
+        overflow: hidden;
+        white-space: nowrap;
+        word-wrap: normal;
+        text-overflow: ellipsis;
+        border: 0;
+    }
+}
+
+table.form {
+    border-collapse: collapse;
+    tr.header {
+        background-image: $fancyGradient;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    tr {
+        padding: 0;
+        margin: 0;
+        th {
+            margin: 0;
+            color: navy;
+            font-weight: bold;
+            text-align: right;
+            padding: 0 {
+                bottom: 1px;
+                right: .3em;
+            };
+            vertical-align: middle;
+            border: 0;
+            font-weight: normal;
+            &.head {
+                color: white;
+                font-weight: normal;
+                text-shadow: $tshadow1;
+                background-color: $bcnc-bg;
+                text-align: left;
+                padding: {
+                    left: .3em;
+                    top: .2em;
+                    bottom: .3em;
+                }
+                border-bottom: 1px solid navy;    
+            }
+        }
+        td {
+            vertical-align: top;
+            input:not([type]), 
+            input[type="text"] {
+                border: 0;
+                border-bottom: 1px solid $input-border;
+                margin-bottom: .25em;
+            }
+            &.instructions {
+                color: brown;
+                font-style: italic;
+                padding: 1em {
+                    top: .5em;
+                    bottom: .5em;
+                };
+                background-image: linear-gradient(to top, white, whitesmoke, white);           
+            }
+        }
+        &.fancy {
+            background-image: $fancyGradient;
+            th {
+                color: white;
+                padding: {
+                    top: 0;
+                    bottom: .6em;
+                    left: 1em;
+                    right: 1em;
+                };
+                text-align: center;
+                text-shadow: $tshadow;
+                border: {
+                    top: .8em solid transparent;
+                    bottom: .4em solid transparent;
+                }
+            }
+        }
+    }
+}
+
+::placeholder {
+    color: lightblue;
+    opacity: 1; /* Firefox */
+}

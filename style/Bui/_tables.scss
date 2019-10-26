@@ -1,0 +1,25 @@
+table.BTable {
+    border-collapse: separate;
+    border-spacing: 0;
+    tr th.th {
+        background-color: $bcnc-bg;
+        color: white;
+        font-weight: normal;
+        padding: .25em;
+        text-shadow: $tshadow1;
+    }
+    tbody tr {
+        &.pickedRow {
+            background-color: $bcnc-pickedBackground;
+        }
+        td {
+            padding: {
+                left: .25em;
+                right: .25em;
+                top: .15em;
+                bottom: .15em;
+            }
+            border-bottom: .5px solid silver;
+        }
+    }
+}

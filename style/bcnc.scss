@@ -1,0 +1,49 @@
+$bqbg: rgb(45, 119, 194);
+$h1: 1.3rem;
+$h2: 1.125rem;
+
+* {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+body {
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+}
+
+.bcncPageHeader {
+    padding: .2rem;
+    position: relative;
+    height: 60px;
+    background: $bqbg;
+    color: white;
+    text-shadow: 2px 2px 2px black;
+    font-size: $h1;
+    display: table-cell;
+    vertical-align: middle;
+    width: 100vw;
+}
+.bcncPageBody {
+    padding: .2rem;
+    position: relative;
+    height: calc(100vh - 100px);
+    background: linen;
+    color: black;
+}
+div.center {
+    position: relative;
+    margin: 0 auto;
+}
+.bcncPageFooter {
+    padding: .2rem;
+    position: relative;
+    height: 40px;
+    background: gainsboro;
+    color: darkslategray;
+    border-top: 1px solid darkslategray;
+    display: table-cell;
+    vertical-align: middle;
+    width: 100vw;
+}
