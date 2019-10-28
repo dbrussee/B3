@@ -1,9 +1,6 @@
 namespace B {
-    export namespace B.cache {
-        export let forms = {}
-    }
     
-    export function getForm(id:string, allowSubmit:boolean = false) {
+    export function getForm(id:string, allowSubmit:boolean = false):Form {
         let frm = Form.cache[id];
         if (frm == undefined) {
             frm = new Form(id, allowSubmit);

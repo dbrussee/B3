@@ -44,6 +44,7 @@
         //alert(msg);
         frm.set("lname", "Brussee the great");
         var didIChange = B.util.compare(chk, frm.get());
+        openDialog('dlgA');
         if (didIChange) {
             showMessage("Content did not change");
         } else {
@@ -63,7 +64,7 @@
     </script>
 </head>
 <body onload='init()'>
-    <div style="width: 500px;" class="center">
+    <div style="width: 500px; z-index:0" class="center">
         <form name='frmA'>
             <table class='form'>
                 <tr><th>First Name:</th><td><input name='fname' value='Daniel'></td></tr>
@@ -81,6 +82,9 @@
         </table>
         <div id='locInfo'></div>
     </div>
-       
+    <form id='dlgA' class='BDialog' style='height: 200px; width: 300px;'>
+        I am here!
+        <br><button onclick='popDialog()'>Close Me</button>
+    </form>
 </body>
 </html>

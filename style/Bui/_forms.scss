@@ -1,4 +1,15 @@
-
+form.BDialog {
+    /* Holder for dialog forms, etc */
+    display: none;
+    border: 1px solid black;
+    border-radius: .3em;
+    padding: .7em;
+    box-shadow: 
+    .25em .25em .25em gray,
+    0 0 2em 1em gainsboro;
+    position: absolute;
+    background-color: white;
+}
 select {
     padding: {
         top: .1em;

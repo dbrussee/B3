@@ -351,7 +351,7 @@ namespace B {
                     if (this.rowCountTitle2 == "") {
                         this.rowCountTitle2 = this.rowCountTitle + "s";
                     }
-                    this.footerMessageContainer.innerHTML = format.numberWithCommas(count) + " " + this.rowCountTitle2;
+                    this.footerMessageContainer.innerHTML = B.format.numberWithCommas(count) + " " + this.rowCountTitle2;
                 }
             }
         }
@@ -398,7 +398,7 @@ namespace B {
                 if (dsObj != null) {
                     if (dsObj.autoTrim) html = html.trim();
                     if (dsObj.type == "money") {
-                        html = format.money(html);
+                        html = B.format.money(html);
                     } else if (dsObj.type == "bool") {
                         let isYes = false;
                         if (html != "") {
@@ -434,13 +434,13 @@ namespace B {
             this.freezeCover = div;
             if (text == undefined) text = "";
             //this.freezeTimer = new B.Stopwatch(50, true);
-            this.freezeTextElement = util.addOverlayText(div, text);//, this.freezeTimer);
+            this.freezeTextElement = B.util.addOverlayText(div, text);//, this.freezeTimer);
         }
         thaw() {
             if (this.freezeTimer != null) {
                 this.freezeTimer.stop();
             }
-            util.killElement(this.freezeTextElement, this.freezeCover);
+            B.util.killElement(this.freezeTextElement, this.freezeCover);
         }
         
     }

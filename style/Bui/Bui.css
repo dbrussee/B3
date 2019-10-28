@@ -279,6 +279,19 @@
   border-color: #c2f3c5;
 }
 
+form.BDialog {
+  /* Holder for dialog forms, etc */
+  font-size: 1em;
+  display: none;
+  border: 1px solid black;
+  border-radius: .3em;
+  padding: .7em;
+  -webkit-box-shadow: .25em .25em .25em gray, 0 0 2em 1em gainsboro;
+          box-shadow: .25em .25em .25em gray, 0 0 2em 1em gainsboro;
+  position: absolute;
+  background-color: white;
+}
+
 select {
   padding-top: .1em;
   padding-bottom: .15em;

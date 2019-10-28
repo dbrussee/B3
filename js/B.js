@@ -1,6 +1,8 @@
 var B;
 (function (B) {
     B.version = '2.1ts';
+})(B || (B = {}));
+(function (B) {
     var format;
     (function (format) {
         function numberWithCommas(num) {
@@ -12,6 +14,8 @@ var B;
         }
         format.money = money;
     })(format = B.format || (B.format = {}));
+})(B || (B = {}));
+(function (B) {
     var util;
     (function (util) {
         function killElement() {
@@ -124,14 +128,96 @@ var B;
 })(B || (B = {}));
 console.log(B.version);
 var B;
-(function (B_1) {
-    var B;
-    (function (B) {
-        var cache;
-        (function (cache) {
-            cache.forms = {};
-        })(cache = B.cache || (B.cache = {}));
-    })(B = B_1.B || (B_1.B = {}));
+(function (B) {
+    var Dialog = /** @class */ (function () {
+        function Dialog(id) {
+            this.id = "";
+            this.domObj = null;
+            this.form = null;
+            if (B.Dialog.dialogs[id] != undefined) {
+                return B.Dialog.get(id);
+            }
+            this.id = id;
+            this.domObj = document.getElementById(id);
+            // TODO make the div pretty, etc
+            B.Dialog.dialogs[id] = this;
+            B.Dialog.dialogCount++;
+            if (B.Dialog.dialogCount == 1) {
+                B.Dialog.overlay = document.createElement("div");
+                document.body.appendChild(B.Dialog.overlay);
+                B.Dialog.overlay.style.cssText =
+                    "postion: fixed; " +
+                        "display: none; " + /* Hidden by default */
+                        "width: 100vw; " + /* Full width (cover the whole page) */
+                        "height: 100vh; " + /* Full height (cover the whole page) */
+                        "top: 0; " +
+                        "left: 0; " +
+                        //"right: 0; " +
+                        //"bottom: 0; " +
+                        "background-color: rgba(0,0,0,0.3); "; /* Black background with opacity */
+                //"z-index: 2; "; /* Specify a stack order in case you're using a different order for other elements */
+            }
+            this.form = new B.Form(id);
+        }
+        Dialog.prototype.isOpen = function () { return (this.domObj.style.display == "inline-block"); };
+        Dialog.prototype.open = function (center) {
+            if (this.isOpen())
+                return;
+            this.domObj.style.display = "inline-block";
+            var z = (B.Dialog.dialogStack.length * 2) + 10;
+            B.Dialog.overlay.style.zIndex = z;
+            B.Dialog.overlay.style.display = "block";
+            this.domObj.style.zIndex = (z + 1).toString();
+            if (center == undefined)
+                center = true;
+            if (center) {
+                // Calculate positioning
+                var rect = this.domObj.getBoundingClientRect();
+                this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
+                this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+            }
+            B.Dialog.dialogStack.push(this.id);
+        };
+        Dialog.prototype.close = function () {
+            if (!this.isOpen())
+                return;
+            this.domObj.style.display = "none";
+            for (var i = 0; i < B.Dialog.dialogStack.length; i++) {
+                if (B.Dialog.dialogStack[i] == this.id) {
+                    B.Dialog.dialogStack = B.Dialog.dialogStack.splice(i, 1);
+                }
+            }
+        };
+        Dialog.get = function (id) {
+            var dlg = B.Dialog.dialogs[id];
+            if (dlg == null) {
+                dlg = new Dialog(id);
+            }
+            return dlg;
+        };
+        Dialog.overlay = null;
+        Dialog.dialogs = {};
+        Dialog.dialogCount = 0;
+        Dialog.dialogStack = [];
+        return Dialog;
+    }());
+    B.Dialog = Dialog;
+})(B || (B = {}));
+function openDialog(id) {
+    var dlg = B.Dialog.get(id);
+    dlg.open();
+    return dlg.form;
+}
+function closeDialog(id) {
+    B.Dialog.get(id).close();
+}
+function popDialog() {
+    if (B.Dialog.dialogStack.length > 0) {
+        closeDialog(B.Dialog.dialogStack[B.Dialog.dialogStack.length - 1]);
+    }
+}
+var B;
+(function (B) {
     function getForm(id, allowSubmit) {
         if (allowSubmit === void 0) { allowSubmit = false; }
         var frm = Form.cache[id];
@@ -140,7 +226,7 @@ var B;
         }
         return frm;
     }
-    B_1.getForm = getForm;
+    B.getForm = getForm;
     var Form = /** @class */ (function () {
         function Form(id, allowSubmit) {
             if (allowSubmit === void 0) { allowSubmit = false; }
@@ -208,7 +294,7 @@ var B;
         Form.cache = {};
         return Form;
     }());
-    B_1.Form = Form;
+    B.Form = Form;
 })(B || (B = {}));
 console.log("Form " + B.version);
 var B;

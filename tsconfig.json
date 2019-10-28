@@ -2,8 +2,8 @@
     "compilerOptions": {
         "module": "system",
         "sourceMap": true,
-        "outDir": "../",
-        "outFile": "../B.js"
+        "outDir": "./js/",
+        "outFile": "./js/B.js"
     },
     "include": ["**/*"],
     "exclude": [
