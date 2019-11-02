@@ -18,7 +18,7 @@
             showMessage("You double-clicked on the row number " + tr.rowIndex);
         }
         tblA.setTableHeight("200px");
-        tblA.footer.addButton("add", "Add Row", null);
+        tblA.footer.addButton("add", "Add Row", function() { openDialog('dlgA'); });
         tblA.footer.addButton("b1", "My Button", function() {
             showMessage("You clicked My Button");
         }, true).disable();
@@ -44,7 +44,6 @@
         //alert(msg);
         frm.set("lname", "Brussee the great");
         var didIChange = B.util.compare(chk, frm.get());
-        openDialog('dlgA');
         if (didIChange) {
             showMessage("Content did not change");
         } else {
@@ -63,7 +62,7 @@
     
     </script>
 </head>
-<body onload='init()'>
+<body onload='init()' style='padding:.4rem'>
     <div style="width: 500px; z-index:0" class="center">
         <form name='frmA'>
             <table class='form'>
@@ -82,9 +81,15 @@
         </table>
         <div id='locInfo'></div>
     </div>
-    <form id='dlgA' class='BDialog' style='height: 200px; width: 300px;'>
-        I am here!
-        <br><button onclick='popDialog()'>Close Me</button>
+    <form id='dlgA' class='BDialog' style='height: 300px; width: 400px;'>
+        This is the first of 2 dialogs.
+        <br>
+        <button class='BDialogButton' onclick='openDialog("dlgB")'>Open 2nd Dialog</button>
+        <button class='BDialogButton' onclick='popDialog()'>Close Me</button>
+    </form>
+    <form id='dlgB' class='BDialog' style='height:200px; width:300px;' title='Second Dialog'>
+        This is the 2nd dialog.
+        <br><button class='BDialogButton' onclick='popDialog()'>Close Me</button>
     </form>
 </body>
 </html>

@@ -279,9 +279,8 @@
   border-color: #c2f3c5;
 }
 
-form.BDialog {
+.BDialog {
   /* Holder for dialog forms, etc */
-  font-size: 1em;
   display: none;
   border: 1px solid black;
   border-radius: .3em;
@@ -290,6 +289,10 @@ form.BDialog {
           box-shadow: .25em .25em .25em gray, 0 0 2em 1em gainsboro;
   position: absolute;
   background-color: white;
+}
+
+.BDialogButton {
+  margin-left: .4em;
 }
 
 select {
@@ -363,8 +366,8 @@ input[type="reset"],
   border-radius: .3em;
   padding-left: .6em;
   padding-right: .6em;
-  padding-top: .2em;
-  padding-bottom: .2em;
+  padding-top: .15em;
+  padding-bottom: .25em;
 }
 
 button:hover, button:focus, button:active,
@@ -575,6 +578,11 @@ table.BTable tbody tr td {
           box-sizing: border-box;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 12pt;
+}
+
+body {
+  position: relative;
+  min-height: 100%;
 }
 
 .errorMarker {

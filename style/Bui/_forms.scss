@@ -1,4 +1,4 @@
-form.BDialog {
+.BDialog {
     /* Holder for dialog forms, etc */
     display: none;
     border: 1px solid black;
@@ -9,6 +9,9 @@ form.BDialog {
     0 0 2em 1em gainsboro;
     position: absolute;
     background-color: white;
+}
+.BDialogButton {
+    margin-left: .4em;
 }
 select {
     padding: {
@@ -71,8 +74,8 @@ input[type="reset"],
     padding: {
         left: .6em;
         right: .6em;
-        top: .2em;
-        bottom: .2em;
+        top: .15em;
+        bottom: .25em;
     }
     &:hover,
     &:focus,

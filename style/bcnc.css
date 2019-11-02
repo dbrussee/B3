@@ -2,11 +2,13 @@
   border: 0;
   padding: 0;
   margin: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
 body {
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   position: absolute;
 }
 
@@ -24,7 +26,6 @@ body {
 }
 
 .bcncPageBody {
-  padding: .2rem;
   position: relative;
   height: calc(100vh - 100px);
   background: linen;

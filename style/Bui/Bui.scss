@@ -10,6 +10,10 @@
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 12pt;
 }
+body {
+    position: relative;
+    min-height: 100%;
+}
 
 .errorMarker {
     border-right: .3em solid red !important;
