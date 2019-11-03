@@ -284,11 +284,23 @@
   display: none;
   border: 1px solid black;
   border-radius: .3em;
-  padding: .7em;
   -webkit-box-shadow: .25em .25em .25em gray, 0 0 2em 1em gainsboro;
           box-shadow: .25em .25em .25em gray, 0 0 2em 1em gainsboro;
   position: absolute;
   background-color: white;
+}
+
+.BDialog div.titlebar {
+  background-color: #0099cc;
+  cursor: -webkit-grab;
+  cursor: grab;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  padding-left: .5em;
+  padding-top: .4em;
+  padding-bottom: .4em;
+  border-radius: .2em;
+  margin: .2em;
 }
 
 .BDialogButton {
@@ -583,6 +595,16 @@ table.BTable tbody tr td {
 body {
   position: relative;
   min-height: 100%;
+}
+
+span.anchor {
+  color: blue;
+  cursor: pointer;
+}
+
+span.anchor:hover {
+  color: green;
+  text-decoration: underline;
 }
 
 .errorMarker {

@@ -15,6 +15,15 @@ body {
     min-height: 100%;
 }
 
+span.anchor {
+    color: blue;
+    cursor: pointer;
+    &:hover {
+        color: green;
+        text-decoration: underline;
+    }
+}
+
 .errorMarker {
     border-right: .3em solid red !important;
     /*box-shadow: 0 0 .5em red inset;

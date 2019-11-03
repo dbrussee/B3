@@ -59,6 +59,12 @@
     function showMessage(msg) {
         document.getElementById("locInfo").innerHTML = msg;
     }
+
+    function askUser() {
+        chooseW("This is my message", "My Title", "Item A=A|Item B=B", function(rslt) {
+            say("You Chose Item " + rslt);
+        });
+    }
     
     </script>
 </head>
@@ -82,13 +88,18 @@
         <div id='locInfo'></div>
     </div>
     <form id='dlgA' class='BDialog' style='height: 300px; width: 400px;'>
-        This is the first of 2 dialogs.
-        <br>
+        This is the first of 2 dialogs. <br>
+        <span class='anchor' onclick='say("You clicked an anchor span");'>Say Something</span><br>
+        <span class='anchor' onclick='sayG("You clicked an anchor span");'>Something Good</span><br>
+        <span class='anchor' onclick='sayW("You clicked an anchor span");'>Warning</span><br>
+        <span class='anchor' onclick='sayE("You clicked an anchor span");'>Something Bad</span><br>
         <button class='BDialogButton' onclick='openDialog("dlgB")'>Open 2nd Dialog</button>
         <button class='BDialogButton' onclick='popDialog()'>Close Me</button>
     </form>
     <form id='dlgB' class='BDialog' style='height:200px; width:300px;' title='Second Dialog'>
-        This is the 2nd dialog.
+        This is the 2nd dialog.<br>
+        <span class='anchor' onclick='say("You clicked a second anchor span", "Custom Title");'>Say Something</span><br>
+        <span class='anchor' onclick='askUser()'>Ask User</span>
         <br><button class='BDialogButton' onclick='popDialog()'>Close Me</button>
     </form>
 </body>

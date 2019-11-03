@@ -130,60 +130,90 @@ console.log(B.version);
 var B;
 (function (B) {
     var Dialog = /** @class */ (function () {
-        function Dialog(id) {
+        function Dialog(id, callback) {
+            if (callback === void 0) { callback = function () { }; }
             this.id = "";
             this.domObj = null;
-            this.container = null;
+            this.content = null;
+            this.title = null;
+            this.buttonbox = null;
+            this.buttonList = [];
+            this.callback = null;
             this.form = null;
             if (B.Dialog.dialogs[id] != undefined) {
                 return B.Dialog.get(id);
             }
             this.id = id;
-            var el = document.getElementById(id);
+            this.callback = callback;
+            this.content = document.getElementById(id);
             // Create a container for the dialog
             this.domObj = document.createElement("div");
             this.domObj.className = "BDialog";
             this.domObj.style.cssText = "display:none; position:absolute;";
-            this.domObj.style.height = el.style.height + 25; // Room for a button box
-            this.domObj.style.width = el.style.width;
-            el.insertAdjacentElement("beforebegin", this.domObj);
-            el.className = "";
-            // Move the form into the container
-            this.domObj.appendChild(el);
+            this.domObj.style.height = this.content.style.height;
+            this.domObj.style.width = this.content.style.width;
+            this.content.insertAdjacentElement("beforebegin", this.domObj);
+            this.content.className = "";
+            // Make the header box
+            this.title = document.createElement("div");
+            this.title.className = "titlebar";
+            var msg = this.content.getAttribute("title");
+            if (msg == null || msg == "")
+                msg = "System Message";
+            this.title.innerHTML = msg;
+            this.title.onmousedown = B.Dialog.startDrag;
+            this.content.removeAttribute("title");
+            this.domObj.appendChild(this.title);
+            var scrollbox = document.createElement("div");
+            // Make room for a header and buttons
+            scrollbox.style.height = "calc(" + this.content.style.height + " - 5.1em)";
+            scrollbox.style.overflowY = "auto";
+            this.content.style.height = "";
+            this.content.style.padding = ".5em";
+            // Move the content into the scrollbox
+            scrollbox.appendChild(this.content);
+            // Move the scrollbox into the container
+            this.domObj.appendChild(scrollbox);
             // Add a button box for the bottom of the container
-            var bbox = document.createElement("div");
-            bbox.style.cssText = "border-top: 1px solid silver; padding-top: .4rem; text-align: right;";
-            this.domObj.appendChild(bbox);
-            var btns = el.getElementsByClassName("BDialogButton");
-            if (btns.length == 0) {
-                var btn = document.createElement("button");
-                btn.innerHTML = "Close";
-                btn.onclick = popDialog;
-                bbox.appendChild(btn);
+            this.buttonbox = document.createElement("div");
+            this.buttonbox.style.cssText = "border-top: 1px dotted black; padding: .5rem; text-align: right;";
+            this.domObj.appendChild(this.buttonbox);
+            var btns = this.content.getElementsByClassName("BDialogButton");
+            while (btns.length > 0) {
+                var btn = btns.item(0);
+                this.buttonbox.appendChild(btn);
+                this.buttonList.push(btn);
             }
-            else {
-                while (btns.length > 0) {
-                    var btn = btns.item(0);
-                    bbox.appendChild(btn);
-                }
-            }
-            // TODO make the div pretty, etc
             B.Dialog.dialogs[id] = this;
             B.Dialog.dialogCount++;
             if (B.Dialog.dialogCount == 1) {
                 B.Dialog.overlay = document.createElement("div");
+                B.Dialog.overlay.onclick = popDialog;
                 document.body.appendChild(B.Dialog.overlay);
                 B.Dialog.overlay.style.cssText =
                     "position: absolute; " +
+                        "cursor: pointer; " +
                         "display: none; " + /* Hidden by default */
                         "width: 100%; height:100%; " + /* Full width (cover the whole page) */
                         "top: 0; left: 0; right: 0; bottom: 0; " +
                         "margin:0; padding:0; border: 0; " +
-                        "background: rgba(0,0,0,0.3); "; /* Black background with opacity */
+                        "background: rgba(0,0,0,0.2); "; /* Black background with opacity */
                 "z-index: 1; "; /* Specify a stack order in case you're using a different order for other elements */
             }
             this.form = new B.Form(id);
         }
+        Dialog.prototype.setContent = function (html) {
+            this.content.innerHTML = html;
+            return this;
+        };
+        Dialog.prototype.setTitle = function (html) {
+            this.title.innerHTML = html;
+            return this;
+        };
+        Dialog.prototype.setCallback = function (callback) {
+            this.callback = callback;
+            return this;
+        };
         Dialog.prototype.isOpen = function () { return (this.domObj.style.display == "inline-block"); };
         Dialog.prototype.open = function (center) {
             if (center === void 0) { center = true; }
@@ -203,6 +233,7 @@ var B;
                 this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
             }
             B.Dialog.dialogStack.push(this.id);
+            return this;
         };
         Dialog.prototype.close = function () {
             if (!this.isOpen())
@@ -220,18 +251,102 @@ var B;
                 var z = ((B.Dialog.dialogStack.length - 1) * 2) + 10;
                 B.Dialog.overlay.style.zIndex = z;
             }
+            return this;
+        };
+        Dialog.prototype.setButtons = function () {
+            var btns = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                btns[_i] = arguments[_i];
+            }
+            this.buttonbox.innerHTML = "";
+            this.buttonList = [];
+            for (var i = 0; i < btns.length; i++) {
+                this.addButton(btns[i]);
+            }
+            return this;
+        };
+        Dialog.prototype.addButton = function (text, returnValue) {
+            if (returnValue === void 0) { returnValue = ""; }
+            if (returnValue == "") {
+                var parts = text.split("=");
+                if (parts.length == 1) {
+                    returnValue = (this.buttonList.length + 1).toString();
+                }
+                else {
+                    text = parts[0];
+                    returnValue = parts[1];
+                }
+            }
+            var btn = document.createElement("button");
+            btn.setAttribute("data", returnValue);
+            btn.className = "BDialogButton";
+            btn.onclick = function (event) {
+                var dlg = B.Dialog.get();
+                popDialog();
+                var el = event.target;
+                dlg.callback(el.getAttribute("data"));
+            };
+            btn.innerHTML = text;
+            this.buttonbox.appendChild(btn);
+            return this;
         };
         Dialog.get = function (id) {
+            if (id === void 0) { id = ""; }
+            if (id == "") {
+                var pos = B.Dialog.dialogStack.length;
+                if (pos < 1)
+                    return null;
+                id = B.Dialog.dialogStack[pos - 1];
+            }
             var dlg = B.Dialog.dialogs[id];
             if (dlg == null) {
                 dlg = new Dialog(id);
             }
             return dlg;
         };
+        Dialog.getSay = function () {
+            var test = B.Dialog.dialogs["B_SAY_DIALOG"];
+            if (test == null) {
+                var frm = document.createElement("form");
+                frm.id = "B_SAY_DIALOG";
+                frm.className = "BDialog";
+                frm.style.cssText = "height: 200px; width: 400px;";
+                document.body.appendChild(frm);
+            }
+            var dlg = openDialog("B_SAY_DIALOG");
+            dlg.domObj.style.backgroundColor = "";
+            return dlg;
+        };
+        Dialog.startDrag = function (event) {
+            var dlg = B.Dialog.get();
+            B.Dialog.dragInfo.dlg = dlg;
+            var rect = dlg.domObj.getBoundingClientRect();
+            B.Dialog.dragInfo.offset.x = event.x - rect.left;
+            B.Dialog.dragInfo.offset.y = event.y - rect.top;
+            dlg.title.onmousemove = B.Dialog.dragHandler;
+            dlg.title.onmouseup = B.Dialog.drop;
+            dlg.title.onmouseout = B.Dialog.drop;
+            dlg.title.style.cursor = "grabbing";
+        };
+        Dialog.dragHandler = function (event) {
+            var inf = B.Dialog.dragInfo;
+            var dlg = inf.dlg;
+            dlg.domObj.style.left = (event.x - inf.offset.x) + "px";
+            dlg.domObj.style.top = (event.y - inf.offset.y) + "px";
+        };
+        Dialog.drop = function () {
+            var dlg = B.Dialog.dragInfo.dlg;
+            dlg.title.onmousemove = null;
+            dlg.title.onmouseup = null;
+            dlg.title.onmouseout = null;
+            dlg.title.style.cursor = "grab";
+            dlg = null;
+        };
         Dialog.overlay = null;
         Dialog.dialogs = {};
         Dialog.dialogCount = 0;
         Dialog.dialogStack = [];
+        Dialog.dragInfo = { dlg: null, offset: { x: 0, y: 0 } };
         return Dialog;
     }());
     B.Dialog = Dialog;
@@ -239,15 +354,90 @@ var B;
 function openDialog(id) {
     var dlg = B.Dialog.get(id);
     dlg.open();
-    return dlg.form;
+    return dlg;
 }
 function closeDialog(id) {
-    B.Dialog.get(id).close();
+    var dlg = B.Dialog.get(id);
+    dlg.close();
+    return dlg;
 }
 function popDialog() {
     if (B.Dialog.dialogStack.length > 0) {
-        closeDialog(B.Dialog.dialogStack[B.Dialog.dialogStack.length - 1]);
+        return closeDialog(B.Dialog.dialogStack[B.Dialog.dialogStack.length - 1]);
     }
+    else {
+        return null;
+    }
+}
+function say(msg, title, onclose, bgcolor) {
+    if (title === void 0) { title = "System Message"; }
+    if (onclose === void 0) { onclose = function () { }; }
+    if (bgcolor === void 0) { bgcolor = ""; }
+    var dlg = B.Dialog.getSay();
+    dlg.setContent(msg);
+    dlg.setTitle(title);
+    dlg.setCallback(onclose);
+    dlg.setButtons("Close");
+    dlg.domObj.style.backgroundColor = bgcolor;
+    return dlg;
+}
+function sayG(msg, title, onclose) {
+    if (title === void 0) { title = "System Message"; }
+    if (onclose === void 0) { onclose = function () { }; }
+    var dlg = say(msg, title, onclose, "aquamarine");
+}
+function sayW(msg, title, onclose) {
+    if (title === void 0) { title = "System Message"; }
+    if (onclose === void 0) { onclose = function () { }; }
+    var dlg = say(msg, title, onclose, "lightyellow");
+}
+function sayE(msg, title, onclose) {
+    if (title === void 0) { title = "System Message"; }
+    if (onclose === void 0) { onclose = function () { }; }
+    var dlg = say(msg, title, onclose, "lightpink");
+}
+function choose(msg, title, buttons, callback, bgcolor) {
+    if (title === void 0) { title = "System Message"; }
+    if (bgcolor === void 0) { bgcolor = ""; }
+    var dlg = B.Dialog.getSay();
+    dlg.setContent(msg);
+    dlg.setTitle(title);
+    dlg.setButtons();
+    dlg.setCallback(callback);
+    var list = buttons.split("|");
+    for (var i = 0; i < list.length; i++) {
+        dlg.addButton(list[i]);
+    }
+    dlg.domObj.style.backgroundColor = bgcolor;
+    return dlg;
+}
+function chooseG(msg, title, buttons, callback) {
+    if (title === void 0) { title = "System Message"; }
+    var dlg = choose(msg, title, buttons, callback, "aquamarine");
+}
+function chooseW(msg, title, buttons, callback) {
+    if (title === void 0) { title = "System Message"; }
+    var dlg = choose(msg, title, buttons, callback, "lightyellow");
+}
+function chooseE(msg, title, buttons, callback) {
+    if (title === void 0) { title = "System Message"; }
+    var dlg = choose(msg, title, buttons, callback, "lightpink");
+}
+function ask(msg, title, callback) {
+    if (title === void 0) { title = "System Message"; }
+    return choose(msg, title, "Yes=YES|No=NO", callback, "");
+}
+function askG(msg, title, callback) {
+    if (title === void 0) { title = "System Message"; }
+    return choose(msg, title, "Yes=YES|No=NO", callback, "aquamarine");
+}
+function askW(msg, title, callback) {
+    if (title === void 0) { title = "System Message"; }
+    return choose(msg, title, "Yes=YES|No=NO", callback, "lightyellow");
+}
+function askE(msg, title, callback) {
+    if (title === void 0) { title = "System Message"; }
+    return choose(msg, title, "Yes=YES|No=NO", callback, "lightpink");
 }
 var B;
 (function (B) {
@@ -724,14 +914,16 @@ var B;
             if (this.anyHeaders)
                 rownum--; // Skipt the header row
             var cells = {}; // Named map of td elements
-            for (var colnum = 0; colnum < this.columnList.length; colnum++) {
-                var column = this.columnList[colnum];
-                var html = this.dataset.rows[rownum][column.id];
-                if (html == undefined)
-                    html = "";
-                html = html.toString(); // just in case the data was a number, etc.
-                var el = tr.cells[colnum];
-                cells[column.id] = el;
+            if (rownum >= 0) {
+                for (var colnum = 0; colnum < this.columnList.length; colnum++) {
+                    var column = this.columnList[colnum];
+                    var html = this.dataset.rows[rownum][column.id];
+                    if (html == undefined)
+                        html = "";
+                    html = html.toString(); // just in case the data was a number, etc.
+                    var el = tr.cells[colnum];
+                    cells[column.id] = el;
+                }
             }
             return cells;
         };

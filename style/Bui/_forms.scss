@@ -3,12 +3,22 @@
     display: none;
     border: 1px solid black;
     border-radius: .3em;
-    padding: .7em;
     box-shadow: 
     .25em .25em .25em gray,
     0 0 2em 1em gainsboro;
     position: absolute;
     background-color: white;
+    div.titlebar {
+        background-color: $bcnc-bg;
+        cursor: grab;
+        color: white;
+        text-shadow: $tshadow1;
+        padding-left: .5em;
+        padding-top: .4em;
+        padding-bottom: .4em;
+        border-radius: .2em;
+        margin:.2em;
+    }
 }
 .BDialogButton {
     margin-left: .4em;

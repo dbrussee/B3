@@ -369,13 +369,15 @@ namespace B {
             let rownum = tr.rowIndex;
             if (this.anyHeaders) rownum--; // Skipt the header row
             let cells = {}; // Named map of td elements
-            for (let colnum = 0; colnum < this.columnList.length; colnum++) {
-                let column = this.columnList[colnum];
-                let html = this.dataset.rows[rownum][column.id];
-                if (html == undefined) html = "";
-                html = html.toString(); // just in case the data was a number, etc.
-                let el = tr.cells[colnum];
-                cells[column.id] = el;
+            if (rownum >= 0) {
+                for (let colnum = 0; colnum < this.columnList.length; colnum++) {
+                    let column = this.columnList[colnum];
+                    let html = this.dataset.rows[rownum][column.id];
+                    if (html == undefined) html = "";
+                    html = html.toString(); // just in case the data was a number, etc.
+                    let el = tr.cells[colnum];
+                    cells[column.id] = el;
+                }
             }
             return cells;
         }
