@@ -140,6 +140,8 @@ var B;
             this.buttonList = [];
             this.callback = null;
             this.form = null;
+            this.h = 0;
+            this.w = 0;
             if (B.Dialog.dialogs[id] != undefined) {
                 return B.Dialog.get(id);
             }
@@ -224,11 +226,13 @@ var B;
             B.Dialog.overlay.style.zIndex = z;
             B.Dialog.overlay.style.display = "block";
             this.domObj.style.zIndex = (z + 1).toString();
+            var rect = this.domObj.getBoundingClientRect();
+            this.h = rect.height;
+            this.w = rect.width;
             if (center == undefined)
                 center = true;
             if (center) {
                 // Calculate positioning
-                var rect = this.domObj.getBoundingClientRect();
                 this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
                 this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
             }
@@ -323,22 +327,37 @@ var B;
             var rect = dlg.domObj.getBoundingClientRect();
             B.Dialog.dragInfo.offset.x = event.x - rect.left;
             B.Dialog.dragInfo.offset.y = event.y - rect.top;
-            dlg.title.onmousemove = B.Dialog.dragHandler;
-            dlg.title.onmouseup = B.Dialog.drop;
-            dlg.title.onmouseout = B.Dialog.drop;
+            document.onmousemove = B.Dialog.dragHandler;
+            document.onmouseup = B.Dialog.drop;
+            //dlg.title.onmousemove = B.Dialog.dragHandler;
+            //dlg.title.onmouseup = B.Dialog.drop;
             dlg.title.style.cursor = "grabbing";
         };
         Dialog.dragHandler = function (event) {
             var inf = B.Dialog.dragInfo;
             var dlg = inf.dlg;
-            dlg.domObj.style.left = (event.x - inf.offset.x) + "px";
-            dlg.domObj.style.top = (event.y - inf.offset.y) + "px";
+            var newLeft = (event.x - inf.offset.x);
+            var newRight = newLeft + dlg.w;
+            var newTop = (event.y - inf.offset.y);
+            var newBottom = newTop + dlg.h;
+            console.log(window.innerWidth);
+            if (newLeft < 0)
+                return;
+            if (newTop < 0)
+                return;
+            if (newRight > window.innerWidth)
+                return;
+            if (newBottom > window.innerHeight)
+                return;
+            dlg.domObj.style.left = (newLeft) + "px";
+            dlg.domObj.style.top = (newTop) + "px";
         };
         Dialog.drop = function () {
             var dlg = B.Dialog.dragInfo.dlg;
-            dlg.title.onmousemove = null;
-            dlg.title.onmouseup = null;
-            dlg.title.onmouseout = null;
+            document.onmousemove = null;
+            document.onmouseup = null;
+            //dlg.title.onmousemove = null;
+            //dlg.title.onmouseup = null;
             dlg.title.style.cursor = "grab";
             dlg = null;
         };
