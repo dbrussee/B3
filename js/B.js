@@ -158,6 +158,7 @@ var B;
             this.domObj.style.cssText = "display:none; position:absolute;";
             this.domObj.style.height = contentObj.style.height;
             this.domObj.style.width = contentObj.style.width;
+            this.domObj.ondblclick = function () { B.Dialog.get().center(); };
             contentObj.insertAdjacentElement("beforebegin", this.domObj);
             // Make the header box
             this.title = document.createElement("div");
@@ -439,6 +440,7 @@ function say(msg, title, onclose, bgcolor) {
     dlg.setCallback(onclose);
     dlg.setButtons("Close");
     dlg.domObj.style.backgroundColor = bgcolor;
+    dlg.setSize(200, 400, false);
     return dlg;
 }
 function sayG(msg, title, onclose) {
@@ -475,12 +477,25 @@ function sayGet(msg, prompt, defaultValue, title, callback, bgcolor) {
     dlg.setCallback(masterCallback);
     dlg.setButtons("Save=SAVE", "Cancel=CANCEL");
     dlg.domObj.style.backgroundColor = bgcolor;
+    dlg.setSize(200, 400, false);
     var frm = B.getForm("B_SAY_DIALOG");
     frm.set("result", defaultValue);
     var tbox = frm.getElement("result");
     tbox.focus();
     tbox.select();
     return dlg;
+}
+function sayGetG(msg, prompt, defaultValue, title, callback) {
+    if (title === void 0) { title = "System Message"; }
+    return sayGet(msg, prompt, defaultValue, title, callback, "aquamarine");
+}
+function sayGetW(msg, prompt, defaultValue, title, callback) {
+    if (title === void 0) { title = "System Message"; }
+    return sayGet(msg, prompt, defaultValue, title, callback, "lightyellow");
+}
+function sayGetE(msg, prompt, defaultValue, title, callback) {
+    if (title === void 0) { title = "System Message"; }
+    return sayGet(msg, prompt, defaultValue, title, callback, "lightpink");
 }
 function choose(msg, title, buttons, callback, bgcolor) {
     if (title === void 0) { title = "System Message"; }
@@ -495,6 +510,7 @@ function choose(msg, title, buttons, callback, bgcolor) {
         dlg.addButton(list[i]);
     }
     dlg.domObj.style.backgroundColor = bgcolor;
+    dlg.setSize(200, 400, false);
     return dlg;
 }
 function chooseG(msg, title, buttons, callback) {

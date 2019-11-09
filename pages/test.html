@@ -61,15 +61,26 @@
         document.getElementById("locInfo").innerHTML = msg;
     }
 
-    function askUser() {
-        chooseW("This is my message", "My Title", "Item A=A|Item B=B", function(rslt) {
-            say("You Chose Item " + rslt);
-        }).setSize(200, 800, true);
+    function askUser(typ) {
+        var msg = "This is my message";
+        var title = "My Silly Title";
+        var btns = "Item A=A|Item B=B";
+        var func = function(rslt) { say("You chose item " + rslt); }
+        if (typ == "") choose(msg, title, btns, func).setSize(200,800);
+        if (typ == "G") chooseG(msg, title, btns, func).setSize(200,800);
+        if (typ == "W") chooseW(msg, title, btns, func).setSize(200,800);
+        if (typ == "E") chooseE(msg, title, btns, func).setSize(200,800);
     }
-    function getSomething() {
-        sayGet("Please enter a value below.", "Something", "Beef", "Got Beef?", function(rslt) {
-            say("You entered the value '" + rslt + "'");
-        });
+    function getSomething(typ) {
+        var msg = "Plese enter a value below.";
+        var prompt = "Something";
+        var def = "Beef";
+        var title = "Got Beef?";
+        var func = function(rslt) { say("You entered the value " + rslt); }
+        if (typ == "") sayGet(msg, prompt, def, title, func);
+        if (typ == "G") sayGetG(msg, prompt, def, title, func);
+        if (typ == "W") sayGetW(msg, prompt, def, title, func);
+        if (typ == "E") sayGetE(msg, prompt, def, title, func);
     }
     
     </script>
@@ -94,19 +105,27 @@
         <div id='locInfo'></div>
     </div>
     <form id='dlgA' class='BDialog' style='height: 300px; width: 400px;'>
-        This is the first of 2 dialogs. <br>
-        <span class='anchor' onclick='say("You clicked an anchor span");'>Say Something</span><br>
-        <span class='anchor' onclick='sayG("You clicked an anchor span");'>Something Good</span><br>
-        <span class='anchor' onclick='sayW("You clicked an anchor span");'>Warning</span><br>
-        <span class='anchor' onclick='sayE("You clicked an anchor span");'>Something Bad</span><br>
+        This is the first of 2 dialogs. <br><br>
+        Say something <span class='anchor' onclick='say("You clicked an anchor span");'>Normal</span>,
+        <span class='anchor' onclick='sayG("You clicked an anchor span");'>Good</span>,
+        <span class='anchor' onclick='sayW("You clicked an anchor span");'>Warning</span>,
+        <span class='anchor' onclick='sayE("You clicked an anchor span");'>Bad</span><br>
+        Ask User <span class='anchor' onclick='askUser("")'>Normal</span>,
+        <span class='anchor' onclick='askUser("G")'>Good</span>,
+        <span class='anchor' onclick='askUser("W")'>Warning</span>,
+        <span class='anchor' onclick='askUser("E")'>Bad</span><br>
+        Get Value <span class='anchor' onclick='getSomething("")'>Normal</span>,
+        <span class='anchor' onclick='getSomething("G")'>Good</span>,
+        <span class='anchor' onclick='getSomething("W")'>Warning</span>,
+        <span class='anchor' onclick='getSomething("E")'>Bad</span>
         <button class='BDialogButton' onclick='openDialog("dlgB")'>Open 2nd Dialog</button>
         <button class='BDialogButton' onclick='popDialog()'>Close Me</button>
     </form>
     <form id='dlgB' class='BDialog' style='height:200px; width:300px;' title='Second Dialog'>
-        This is the 2nd dialog.<br>
+        This is the 2nd dialog.<br><br>
         <span class='anchor' onclick='say("You clicked a second anchor span", "Custom Title");'>Say Something</span><br>
-        <span class='anchor' onclick='askUser()'>Ask User</span><br>
-        <span class='anchor' onclick='getSomething()'>Prompt User</span>
+        <span class='anchor' onclick='askUser("")'>Ask User</span><br>
+        <span class='anchor' onclick='getSomething("")'>Prompt User</span>
         <br><button class='BDialogButton' onclick='popDialog()'>Close Me</button>
     </form>
 

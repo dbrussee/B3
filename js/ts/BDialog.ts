@@ -33,6 +33,7 @@ namespace B {
             this.domObj.style.cssText = "display:none; position:absolute;"
             this.domObj.style.height = contentObj.style.height;
             this.domObj.style.width = contentObj.style.width;
+            this.domObj.ondblclick = function() { B.Dialog.get().center(); }
             contentObj.insertAdjacentElement("beforebegin", this.domObj);
 
             // Make the header box
@@ -291,6 +292,7 @@ function say(msg:string, title:string="System Message", onclose:CallableFunction
     dlg.setCallback(onclose);
     dlg.setButtons("Close");
     dlg.domObj.style.backgroundColor = bgcolor;
+    dlg.setSize(200, 400, false);
     return dlg;
 }
 function sayG(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
@@ -319,12 +321,22 @@ function sayGet(msg:string, prompt:string, defaultValue:string, title:string="Sy
     dlg.setCallback(masterCallback);
     dlg.setButtons("Save=SAVE", "Cancel=CANCEL");
     dlg.domObj.style.backgroundColor = bgcolor;
+    dlg.setSize(200, 400, false);
     let frm = B.getForm("B_SAY_DIALOG");
     frm.set("result", defaultValue);
     let tbox = frm.getElement("result");
     tbox.focus();
     tbox.select();
     return dlg;
+}
+function sayGetG(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction) {
+    return sayGet(msg, prompt, defaultValue, title, callback, "aquamarine");
+}
+function sayGetW(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction) {
+    return sayGet(msg, prompt, defaultValue, title, callback, "lightyellow");
+}
+function sayGetE(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction) {
+    return sayGet(msg, prompt, defaultValue, title, callback, "lightpink");
 }
 
 function choose(msg:string, title:string="System Message", buttons:string, callback:CallableFunction, bgcolor:string="") {
@@ -338,6 +350,7 @@ function choose(msg:string, title:string="System Message", buttons:string, callb
         dlg.addButton(list[i]);
     }
     dlg.domObj.style.backgroundColor = bgcolor;
+    dlg.setSize(200, 400, false);
     return dlg;
 }
 function chooseG(msg:string, title:string="System Message", buttons:string, callback:CallableFunction) {
