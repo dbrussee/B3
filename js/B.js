@@ -135,50 +135,55 @@ var B;
             this.id = "";
             this.domObj = null;
             this.content = null;
+            this.scrollbox = null;
             this.title = null;
             this.buttonbox = null;
             this.buttonList = [];
             this.callback = null;
+            this.isOpen = false;
+            this.isFirstOpen = true;
             this.form = null;
-            this.h = 0;
-            this.w = 0;
+            this.tallness = 0;
+            this.wideness = 0;
             if (B.Dialog.dialogs[id] != undefined) {
                 return B.Dialog.get(id);
             }
             this.id = id;
             this.callback = callback;
-            this.content = document.getElementById(id);
+            var contentObj = document.getElementById(id);
             // Create a container for the dialog
-            this.domObj = document.createElement("div");
+            this.domObj = document.createElement("form");
+            this.domObj.id = id;
             this.domObj.className = "BDialog";
             this.domObj.style.cssText = "display:none; position:absolute;";
-            this.domObj.style.height = this.content.style.height;
-            this.domObj.style.width = this.content.style.width;
-            this.content.insertAdjacentElement("beforebegin", this.domObj);
-            this.content.className = "";
+            this.domObj.style.height = contentObj.style.height;
+            this.domObj.style.width = contentObj.style.width;
+            contentObj.insertAdjacentElement("beforebegin", this.domObj);
             // Make the header box
             this.title = document.createElement("div");
             this.title.className = "titlebar";
-            var msg = this.content.getAttribute("title");
+            var msg = contentObj.getAttribute("title");
             if (msg == null || msg == "")
                 msg = "System Message";
             this.title.innerHTML = msg;
             this.title.onmousedown = B.Dialog.startDrag;
-            this.content.removeAttribute("title");
             this.domObj.appendChild(this.title);
-            var scrollbox = document.createElement("div");
+            this.scrollbox = document.createElement("div");
             // Make room for a header and buttons
-            scrollbox.style.height = "calc(" + this.content.style.height + " - 5.1em)";
-            scrollbox.style.overflowY = "auto";
+            this.scrollbox.style.cssText = "min-height:calc(100% - 5.1em); overflow-x:hidden; overflow-y:auto";
+            this.content = document.createElement("div");
+            this.scrollbox.appendChild(this.content);
             this.content.style.height = "";
             this.content.style.padding = ".5em";
-            // Move the content into the scrollbox
-            scrollbox.appendChild(this.content);
+            this.content.style.paddingTop = "0";
+            // Move the content into the content container and remove the original content
+            this.content.innerHTML = contentObj.innerHTML;
+            contentObj.parentElement.removeChild(contentObj);
             // Move the scrollbox into the container
-            this.domObj.appendChild(scrollbox);
+            this.domObj.appendChild(this.scrollbox);
             // Add a button box for the bottom of the container
             this.buttonbox = document.createElement("div");
-            this.buttonbox.style.cssText = "border-top: 1px dotted black; padding: .5rem; text-align: right;";
+            this.buttonbox.style.cssText = "border-top: 1px dotted black; padding: .5rem; text-align: right; position:relative; bottom:0";
             this.domObj.appendChild(this.buttonbox);
             var btns = this.content.getElementsByClassName("BDialogButton");
             while (btns.length > 0) {
@@ -190,11 +195,10 @@ var B;
             B.Dialog.dialogCount++;
             if (B.Dialog.dialogCount == 1) {
                 B.Dialog.overlay = document.createElement("div");
-                B.Dialog.overlay.onclick = popDialog;
                 document.body.appendChild(B.Dialog.overlay);
                 B.Dialog.overlay.style.cssText =
                     "position: absolute; " +
-                        "cursor: pointer; " +
+                        //"cursor: pointer; " +
                         "display: none; " + /* Hidden by default */
                         "width: 100%; height:100%; " + /* Full width (cover the whole page) */
                         "top: 0; left: 0; right: 0; bottom: 0; " +
@@ -216,32 +220,47 @@ var B;
             this.callback = callback;
             return this;
         };
-        Dialog.prototype.isOpen = function () { return (this.domObj.style.display == "inline-block"); };
+        Dialog.prototype.center = function () {
+            var rect = this.domObj.getBoundingClientRect();
+            this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
+            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+            return this;
+        };
         Dialog.prototype.open = function (center) {
-            if (center === void 0) { center = true; }
-            if (this.isOpen())
+            if (this.isOpen)
                 return;
+            this.isOpen = true;
             this.domObj.style.display = "inline-block";
             var z = (B.Dialog.dialogStack.length * 2) + 10;
             B.Dialog.overlay.style.zIndex = z;
             B.Dialog.overlay.style.display = "block";
+            window.onkeydown = function (event) {
+                if (event.key == "Escape")
+                    popDialog();
+                if (event.ctrlKey && event.key == "w")
+                    popDialog();
+            };
             this.domObj.style.zIndex = (z + 1).toString();
             var rect = this.domObj.getBoundingClientRect();
-            this.h = rect.height;
-            this.w = rect.width;
-            if (center == undefined)
-                center = true;
+            this.tallness = rect.height; // Used during drag
+            this.wideness = rect.width; // Used during drag
+            if (center == undefined) {
+                if (this.isFirstOpen)
+                    center = true;
+            }
             if (center) {
                 // Calculate positioning
                 this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
                 this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
             }
+            this.isFirstOpen = false;
             B.Dialog.dialogStack.push(this.id);
             return this;
         };
         Dialog.prototype.close = function () {
-            if (!this.isOpen())
+            if (!this.isOpen)
                 return;
+            this.isOpen = false;
             this.domObj.style.display = "none";
             for (var i = 0; i < B.Dialog.dialogStack.length; i++) {
                 if (B.Dialog.dialogStack[i] == this.id) {
@@ -250,11 +269,28 @@ var B;
             }
             if (B.Dialog.dialogStack.length == 0) {
                 B.Dialog.overlay.style.display = "none";
+                window.onkeydown = null;
             }
             else {
                 var z = ((B.Dialog.dialogStack.length - 1) * 2) + 10;
                 B.Dialog.overlay.style.zIndex = z;
             }
+            return this;
+        };
+        Dialog.prototype.setSize = function (height, width, center) {
+            if (center === void 0) { center = true; }
+            if (height != null && height != "") {
+                if (typeof height == "number")
+                    height = height + "px";
+                this.domObj.style.height = height;
+            }
+            if (width != null && width != "") {
+                if (typeof width == "number")
+                    width = width + "px";
+                this.domObj.style.width = width;
+            }
+            if (center)
+                this.center();
             return this;
         };
         Dialog.prototype.setButtons = function () {
@@ -281,9 +317,11 @@ var B;
                     returnValue = parts[1];
                 }
             }
-            var btn = document.createElement("button");
+            var btn = null;
+            btn = document.createElement("button");
             btn.setAttribute("data", returnValue);
             btn.className = "BDialogButton";
+            btn.tabIndex = 100 + this.buttonList.length;
             btn.onclick = function (event) {
                 var dlg = B.Dialog.get();
                 popDialog();
@@ -292,6 +330,7 @@ var B;
             };
             btn.innerHTML = text;
             this.buttonbox.appendChild(btn);
+            this.buttonList.push(btn);
             return this;
         };
         Dialog.get = function (id) {
@@ -325,6 +364,7 @@ var B;
             var dlg = B.Dialog.get();
             B.Dialog.dragInfo.dlg = dlg;
             var rect = dlg.domObj.getBoundingClientRect();
+            B.Dialog.dragInfo.dlg.domObj.style.opacity = .6;
             B.Dialog.dragInfo.offset.x = event.x - rect.left;
             B.Dialog.dragInfo.offset.y = event.y - rect.top;
             document.onmousemove = B.Dialog.dragHandler;
@@ -337,9 +377,9 @@ var B;
             var inf = B.Dialog.dragInfo;
             var dlg = inf.dlg;
             var newLeft = (event.x - inf.offset.x);
-            var newRight = newLeft + dlg.w;
+            var newRight = newLeft + dlg.wideness;
             var newTop = (event.y - inf.offset.y);
-            var newBottom = newTop + dlg.h;
+            var newBottom = newTop + dlg.tallness;
             console.log(window.innerWidth);
             if (newLeft < 0)
                 return;
@@ -354,6 +394,7 @@ var B;
         };
         Dialog.drop = function () {
             var dlg = B.Dialog.dragInfo.dlg;
+            dlg.domObj.style.opacity = 1;
             document.onmousemove = null;
             document.onmouseup = null;
             //dlg.title.onmousemove = null;
@@ -403,17 +444,43 @@ function say(msg, title, onclose, bgcolor) {
 function sayG(msg, title, onclose) {
     if (title === void 0) { title = "System Message"; }
     if (onclose === void 0) { onclose = function () { }; }
-    var dlg = say(msg, title, onclose, "aquamarine");
+    return say(msg, title, onclose, "aquamarine");
 }
 function sayW(msg, title, onclose) {
     if (title === void 0) { title = "System Message"; }
     if (onclose === void 0) { onclose = function () { }; }
-    var dlg = say(msg, title, onclose, "lightyellow");
+    return say(msg, title, onclose, "lightyellow");
 }
 function sayE(msg, title, onclose) {
     if (title === void 0) { title = "System Message"; }
     if (onclose === void 0) { onclose = function () { }; }
-    var dlg = say(msg, title, onclose, "lightpink");
+    return say(msg, title, onclose, "lightpink");
+}
+function sayGet(msg, prompt, defaultValue, title, callback, bgcolor) {
+    if (title === void 0) { title = "System Message"; }
+    if (bgcolor === void 0) { bgcolor = ""; }
+    var dlg = B.Dialog.getSay();
+    var h = msg;
+    h += "<table class='form' style='margin:0 auto; margin-top:.5em;'>";
+    h += "<tr><th>" + prompt + ":</th><td><input tabIndex=1 name='result' size='12'></td></tr>";
+    h += "</table>";
+    dlg.setContent(h);
+    dlg.setTitle(title);
+    var masterCallback = function (val) {
+        if (val == "SAVE") {
+            var chk = B.getForm("B_SAY_DIALOG").get();
+            callback(chk["result"]);
+        }
+    };
+    dlg.setCallback(masterCallback);
+    dlg.setButtons("Save=SAVE", "Cancel=CANCEL");
+    dlg.domObj.style.backgroundColor = bgcolor;
+    var frm = B.getForm("B_SAY_DIALOG");
+    frm.set("result", defaultValue);
+    var tbox = frm.getElement("result");
+    tbox.focus();
+    tbox.select();
+    return dlg;
 }
 function choose(msg, title, buttons, callback, bgcolor) {
     if (title === void 0) { title = "System Message"; }
@@ -432,15 +499,15 @@ function choose(msg, title, buttons, callback, bgcolor) {
 }
 function chooseG(msg, title, buttons, callback) {
     if (title === void 0) { title = "System Message"; }
-    var dlg = choose(msg, title, buttons, callback, "aquamarine");
+    return choose(msg, title, buttons, callback, "aquamarine");
 }
 function chooseW(msg, title, buttons, callback) {
     if (title === void 0) { title = "System Message"; }
-    var dlg = choose(msg, title, buttons, callback, "lightyellow");
+    return choose(msg, title, buttons, callback, "lightyellow");
 }
 function chooseE(msg, title, buttons, callback) {
     if (title === void 0) { title = "System Message"; }
-    var dlg = choose(msg, title, buttons, callback, "lightpink");
+    return choose(msg, title, buttons, callback, "lightpink");
 }
 function ask(msg, title, callback) {
     if (title === void 0) { title = "System Message"; }
@@ -517,13 +584,20 @@ var B;
             }
             return items;
         };
+        Form.prototype.getElement = function (field) {
+            return this.form.elements[field];
+        };
         Form.prototype.set = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
             // Pairs of values set(name,val, name,val);
-            for (var argnum = 0; argnum < arguments.length; argnum += 2) {
-                var field = arguments[argnum];
-                if (arguments.length <= argnum + 1)
+            for (var argnum = 0; argnum < args.length; argnum += 2) {
+                var field = args[argnum];
+                if (args.length <= argnum + 1)
                     return;
-                var val = arguments[argnum + 1];
+                var val = args[argnum + 1];
                 var el = this.form.elements[field];
                 if (el.type == "checkbox") {
                     el.checked = val;

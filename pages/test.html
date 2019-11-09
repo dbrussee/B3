@@ -64,6 +64,11 @@
     function askUser() {
         chooseW("This is my message", "My Title", "Item A=A|Item B=B", function(rslt) {
             say("You Chose Item " + rslt);
+        }).setSize(200, 800, true);
+    }
+    function getSomething() {
+        sayGet("Please enter a value below.", "Something", "Beef", "Got Beef?", function(rslt) {
+            say("You entered the value '" + rslt + "'");
         });
     }
     
@@ -100,7 +105,8 @@
     <form id='dlgB' class='BDialog' style='height:200px; width:300px;' title='Second Dialog'>
         This is the 2nd dialog.<br>
         <span class='anchor' onclick='say("You clicked a second anchor span", "Custom Title");'>Say Something</span><br>
-        <span class='anchor' onclick='askUser()'>Ask User</span>
+        <span class='anchor' onclick='askUser()'>Ask User</span><br>
+        <span class='anchor' onclick='getSomething()'>Prompt User</span>
         <br><button class='BDialogButton' onclick='popDialog()'>Close Me</button>
     </form>
 

@@ -49,12 +49,15 @@ namespace B {
             }
             return items;
         }
-        set() {
+        getElement(field:string) {
+            return this.form.elements[field];
+        }
+        set(...args) {
             // Pairs of values set(name,val, name,val);
-            for (let argnum = 0; argnum < arguments.length; argnum+=2) {
-                let field = arguments[argnum];
-                if (arguments.length <= argnum+1) return;
-                let val = arguments[argnum+1];
+            for (let argnum = 0; argnum < args.length; argnum+=2) {
+                let field = args[argnum];
+                if (args.length <= argnum+1) return;
+                let val = args[argnum+1];
                 let el = this.form.elements[field];
                 if (el.type == "checkbox") {
                     el.checked = val;

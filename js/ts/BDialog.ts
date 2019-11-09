@@ -9,52 +9,59 @@ namespace B {
         private static dragInfo = {dlg:null, offset:{x:0, y:0}};
         public domObj:HTMLElement = null;
         private content = null;
+        private scrollbox = null;
         private title = null;
         private buttonbox = null;
         private buttonList = [];
         private callback = null;
+        private isOpen = false;
+        private isFirstOpen = true;
         public form:Form = null;
-        private h = 0;
-        private w = 0;
+        private tallness = 0;
+        private wideness = 0;
         constructor(id:string, callback:CallableFunction = function() {}) {
             if (B.Dialog.dialogs[id] != undefined) {
                 return B.Dialog.get(id);
             }
             this.id = id;
             this.callback = callback;
-            this.content = document.getElementById(id);
+            let contentObj:HTMLElement = document.getElementById(id);
             // Create a container for the dialog
-            this.domObj = document.createElement("div");
+            this.domObj = document.createElement("form");
+            this.domObj.id = id;
             this.domObj.className = "BDialog";
             this.domObj.style.cssText = "display:none; position:absolute;"
-            this.domObj.style.height = this.content.style.height;
-            this.domObj.style.width = this.content.style.width;
-            this.content.insertAdjacentElement("beforebegin", this.domObj);
-            this.content.className = "";
+            this.domObj.style.height = contentObj.style.height;
+            this.domObj.style.width = contentObj.style.width;
+            contentObj.insertAdjacentElement("beforebegin", this.domObj);
+
             // Make the header box
             this.title = document.createElement("div");
             this.title.className = "titlebar";
-            let msg = this.content.getAttribute("title");
+            let msg = contentObj.getAttribute("title");
             if (msg == null || msg == "") msg = "System Message";
             this.title.innerHTML = msg;
             this.title.onmousedown = B.Dialog.startDrag;
-            this.content.removeAttribute("title");
             this.domObj.appendChild(this.title);
 
-            let scrollbox = document.createElement("div");
+            this.scrollbox = document.createElement("div");
             // Make room for a header and buttons
-            scrollbox.style.height = "calc(" + this.content.style.height + " - 5.1em)";
-            scrollbox.style.overflowY = "auto";
+            this.scrollbox.style.cssText = "min-height:calc(100% - 5.1em); overflow-x:hidden; overflow-y:auto";
+
+            this.content = document.createElement("div");
+            this.scrollbox.appendChild(this.content);
             this.content.style.height = "";
             this.content.style.padding = ".5em";
-            // Move the content into the scrollbox
-            scrollbox.appendChild(this.content);
+            this.content.style.paddingTop = "0";
+            // Move the content into the content container and remove the original content
+            this.content.innerHTML = contentObj.innerHTML;
+            contentObj.parentElement.removeChild(contentObj);
             // Move the scrollbox into the container
-            this.domObj.appendChild(scrollbox);
+            this.domObj.appendChild(this.scrollbox);
 
             // Add a button box for the bottom of the container
             this.buttonbox = document.createElement("div");
-            this.buttonbox.style.cssText = "border-top: 1px dotted black; padding: .5rem; text-align: right;"
+            this.buttonbox.style.cssText = "border-top: 1px dotted black; padding: .5rem; text-align: right; position:relative; bottom:0"
             this.domObj.appendChild(this.buttonbox);
             let btns = this.content.getElementsByClassName("BDialogButton");
             while (btns.length > 0) {
@@ -67,11 +74,11 @@ namespace B {
             B.Dialog.dialogCount++;
             if (B.Dialog.dialogCount == 1) {
                 B.Dialog.overlay = document.createElement("div");
-                B.Dialog.overlay.onclick = popDialog;
+                
                 document.body.appendChild(B.Dialog.overlay);
                 B.Dialog.overlay.style.cssText = 
                     "position: absolute; " +
-                    "cursor: pointer; " +
+                    //"cursor: pointer; " +
                     "display: none; " +/* Hidden by default */
                     "width: 100%; height:100%; " +/* Full width (cover the whole page) */
                     "top: 0; left: 0; right: 0; bottom: 0; " +
@@ -93,28 +100,42 @@ namespace B {
             this.callback = callback;
             return this;
         }
-        isOpen() { return (this.domObj.style.display == "inline-block") }
-        open(center:boolean=true):B.Dialog {
-            if (this.isOpen()) return;
+        center() {
+            let rect = this.domObj.getBoundingClientRect();
+            this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
+            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+            return this;
+        }
+        open(center?:boolean):B.Dialog {
+            if (this.isOpen) return;
+            this.isOpen = true;
             this.domObj.style.display = "inline-block";
             let z = (B.Dialog.dialogStack.length * 2) + 10;
             B.Dialog.overlay.style.zIndex = z;
             B.Dialog.overlay.style.display = "block";
+            window.onkeydown = function(event:KeyboardEvent) {
+                if (event.key == "Escape") popDialog();
+                if (event.ctrlKey && event.key == "w") popDialog();
+            };
             this.domObj.style.zIndex = (z+1).toString();
             let rect = this.domObj.getBoundingClientRect();
-            this.h = rect.height;
-            this.w = rect.width;
-            if (center == undefined) center = true;
+            this.tallness = rect.height; // Used during drag
+            this.wideness = rect.width; // Used during drag
+            if (center == undefined) {
+                if (this.isFirstOpen) center = true;
+            }
             if (center) {
                 // Calculate positioning
                 this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
                 this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
             }
+            this.isFirstOpen = false;
             B.Dialog.dialogStack.push(this.id);
             return this;
         }
         close():B.Dialog {
-            if (!this.isOpen()) return;
+            if (!this.isOpen) return;
+            this.isOpen = false;
             this.domObj.style.display = "none";
             for (let i = 0; i < B.Dialog.dialogStack.length; i++) {
                 if (B.Dialog.dialogStack[i] == this.id) {
@@ -123,10 +144,23 @@ namespace B {
             }
             if (B.Dialog.dialogStack.length == 0) {
                 B.Dialog.overlay.style.display = "none";
+                window.onkeydown = null;
             } else {
                 let z = ((B.Dialog.dialogStack.length-1) * 2) + 10;
                 B.Dialog.overlay.style.zIndex = z;
             }
+            return this;
+        }
+        setSize(height:string|number, width?:string|number, center:boolean=true) {
+            if (height != null && height != "") {
+                if (typeof height == "number") height = height + "px";
+                this.domObj.style.height = height;
+            }
+            if (width != null && width != "") {
+                if (typeof width == "number") width = width + "px";
+                this.domObj.style.width = width;
+            }
+            if (center) this.center();
             return this;
         }
         setButtons(...btns:string[]):Dialog {
@@ -147,9 +181,12 @@ namespace B {
                     returnValue = parts[1]
                 }
             }
-            let btn = document.createElement("button");
+            let btn = null;
+            btn = document.createElement("button");
+            
             btn.setAttribute("data", returnValue);
             btn.className = "BDialogButton";
+            btn.tabIndex = 100 + this.buttonList.length;
             btn.onclick = function(event:MouseEvent) {
                 let dlg = B.Dialog.get();
                 popDialog();
@@ -158,6 +195,7 @@ namespace B {
             }
             btn.innerHTML = text;
             this.buttonbox.appendChild(btn);
+            this.buttonList.push(btn);
     
             return this;
         }
@@ -191,6 +229,7 @@ namespace B {
             let dlg = B.Dialog.get();
             B.Dialog.dragInfo.dlg = dlg;
             let rect = dlg.domObj.getBoundingClientRect();
+            B.Dialog.dragInfo.dlg.domObj.style.opacity = .6;
             B.Dialog.dragInfo.offset.x = event.x - rect.left;
             B.Dialog.dragInfo.offset.y = event.y - rect.top;
             document.onmousemove = B.Dialog.dragHandler;
@@ -203,9 +242,9 @@ namespace B {
             let inf = B.Dialog.dragInfo;
             let dlg = inf.dlg;
             let newLeft = (event.x - inf.offset.x);
-            let newRight = newLeft + dlg.w;
+            let newRight = newLeft + dlg.wideness;
             let newTop = (event.y - inf.offset.y);
-            let newBottom = newTop + dlg.h;
+            let newBottom = newTop + dlg.tallness;
             console.log(window.innerWidth);
             if (newLeft < 0) return;
             if (newTop < 0) return;
@@ -216,6 +255,7 @@ namespace B {
         }
         static drop() {
             let dlg = B.Dialog.dragInfo.dlg;
+            dlg.domObj.style.opacity = 1;
             document.onmousemove = null;
             document.onmouseup = null;
             //dlg.title.onmousemove = null;
@@ -254,13 +294,37 @@ function say(msg:string, title:string="System Message", onclose:CallableFunction
     return dlg;
 }
 function sayG(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
-    let dlg = say(msg, title, onclose, "aquamarine");
+    return say(msg, title, onclose, "aquamarine");
 }
 function sayW(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
-    let dlg = say(msg, title, onclose, "lightyellow");
+    return say(msg, title, onclose, "lightyellow");
 }
 function sayE(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
-    let dlg = say(msg, title, onclose, "lightpink");
+    return say(msg, title, onclose, "lightpink");
+}
+function sayGet(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, bgcolor:string="") {
+    let dlg = B.Dialog.getSay();
+    let h = msg;
+    h += "<table class='form' style='margin:0 auto; margin-top:.5em;'>";
+    h += "<tr><th>" + prompt + ":</th><td><input tabIndex=1 name='result' size='12'></td></tr>";
+    h += "</table>";
+    dlg.setContent(h);
+    dlg.setTitle(title);
+    let masterCallback = function(val:string) {
+        if (val == "SAVE") {
+            let chk = B.getForm("B_SAY_DIALOG").get();
+            callback(chk["result"]);    
+        }
+    }
+    dlg.setCallback(masterCallback);
+    dlg.setButtons("Save=SAVE", "Cancel=CANCEL");
+    dlg.domObj.style.backgroundColor = bgcolor;
+    let frm = B.getForm("B_SAY_DIALOG");
+    frm.set("result", defaultValue);
+    let tbox = frm.getElement("result");
+    tbox.focus();
+    tbox.select();
+    return dlg;
 }
 
 function choose(msg:string, title:string="System Message", buttons:string, callback:CallableFunction, bgcolor:string="") {
@@ -277,13 +341,13 @@ function choose(msg:string, title:string="System Message", buttons:string, callb
     return dlg;
 }
 function chooseG(msg:string, title:string="System Message", buttons:string, callback:CallableFunction) {
-    let dlg = choose(msg, title, buttons, callback, "aquamarine");
+    return choose(msg, title, buttons, callback, "aquamarine");
 }
 function chooseW(msg:string, title:string="System Message", buttons:string, callback:CallableFunction) {
-    let dlg = choose(msg, title, buttons, callback, "lightyellow");
+    return choose(msg, title, buttons, callback, "lightyellow");
 }
 function chooseE(msg:string, title:string="System Message", buttons:string, callback:CallableFunction) {
-    let dlg = choose(msg, title, buttons, callback, "lightpink");
+    return choose(msg, title, buttons, callback, "lightpink");
 }
 function ask(msg:string, title:string="System Message", callback:CallableFunction) {
     return choose(msg, title, "Yes=YES|No=NO", callback, "");
