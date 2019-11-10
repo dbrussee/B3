@@ -16,11 +16,13 @@
         }
         tblA.ondblclick = function(td, tr, rd, cells) {
             showMessage("You double-clicked on the row number " + tr.rowIndex);
+            openDialog("dlgB");
         }
         tblA.setTableHeight("200px");
         tblA.footer.addButton("add", "Add Row", function() { openDialog('dlgA'); });
         tblA.footer.addButton("b1", "My Button", function() {
             showMessage("You clicked My Button");
+            openDialog('dlgB');
         }, true).disable();
         tblA.addRow("1. First Column", "Second", "Third");
         tblA.addRow("2. First Column", "Second", "Third");
@@ -91,9 +93,13 @@
             <table class='form'>
                 <tr><th>First Name:</th><td><input name='fname' value='Daniel'></td></tr>
                 <tr><th>Last Name:</th><td><input name='lname' value='Brussee'></td></tr>
-                <tr><th>Agree to Terms:</th><td><label class='tog'><input onchange='setTestButton()' name='agree' type='checkbox'><i></i></label></td></tr>
+                <tr><th>Agree to Terms:</th><td>
+                    <label class='tog'><input onchange='setTestButton()' name='agree' type='checkbox'><i></i></label>
+                    &nbsp;&nbsp;&nbsp;<button id='btnTest' onclick='test()'>Test</button>
+                    </td>
+                </tr>
             </table>
-            <button id='btnTest' onclick='test()'>Test</button>
+            
         </form>
         <br><br>
         <table id='tblA'>
@@ -106,18 +112,28 @@
     </div>
     <form id='dlgA' class='BDialog' style='height: 300px; width: 400px;'>
         This is the first of 2 dialogs. <br><br>
-        Say something <span class='anchor' onclick='say("You clicked an anchor span");'>Normal</span>,
-        <span class='anchor' onclick='sayG("You clicked an anchor span");'>Good</span>,
-        <span class='anchor' onclick='sayW("You clicked an anchor span");'>Warning</span>,
-        <span class='anchor' onclick='sayE("You clicked an anchor span");'>Bad</span><br>
-        Ask User <span class='anchor' onclick='askUser("")'>Normal</span>,
-        <span class='anchor' onclick='askUser("G")'>Good</span>,
-        <span class='anchor' onclick='askUser("W")'>Warning</span>,
-        <span class='anchor' onclick='askUser("E")'>Bad</span><br>
-        Get Value <span class='anchor' onclick='getSomething("")'>Normal</span>,
-        <span class='anchor' onclick='getSomething("G")'>Good</span>,
-        <span class='anchor' onclick='getSomething("W")'>Warning</span>,
-        <span class='anchor' onclick='getSomething("E")'>Bad</span>
+        <table class='form' style='margin: 0 auto'>
+            <tr class='header'>
+                <th style='width:5em'>Normal</th>
+                <th style='width:5em'>Good</th>
+                <th style='width:5em'>Warn</th>
+                <th style='width:5em'>Error</th></tr>
+            <tr>
+                <td class='anchor' onclick='say("You clicked an anchor span");'>say</td>
+                <td class='anchor' onclick='sayG("You clicked an anchor span");'>sayG</td>
+                <td class='anchor' onclick='sayW("You clicked an anchor span");'>sayW</td>
+                <td class='anchor' onclick='sayE("You clicked an anchor span");'>sayE</td></tr>
+            <tr>
+                <td class='anchor' onclick='askUser("")'>ask</td>
+                <td class='anchor' onclick='askUser("G")'>askG</td>
+                <td class='anchor' onclick='askUser("W")'>askW</td>
+                <td class='anchor' onclick='askUser("E")'>askE</td></tr>
+            <tr>
+                <td class='anchor' onclick='getSomething("")'>sayGet</td>
+                <td class='anchor' onclick='getSomething("G")'>sayGetG</td>
+                <td class='anchor' onclick='getSomething("W")'>sayGetW</td>
+                <td class='anchor' onclick='getSomething("E")'>sayGetE</td></tr>
+        </table>
         <button class='BDialogButton' onclick='openDialog("dlgB")'>Open 2nd Dialog</button>
         <button class='BDialogButton' onclick='popDialog()'>Close Me</button>
     </form>

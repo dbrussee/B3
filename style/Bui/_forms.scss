@@ -136,9 +136,15 @@ table.data {
 table.form {
     border-collapse: collapse;
     tr.header {
-        background-image: $fancyGradient;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
+        background-color: $bcnc-bg;
+        th {
+            color: white;
+            text-align: left;
+            padding: {
+                left: .15em; right: .15em;
+                top: .15em; bottom: .15em;
+            };
+        }
     }
     tr {
         padding: 0;
@@ -148,9 +154,9 @@ table.form {
             color: navy;
             font-weight: bold;
             text-align: right;
-            padding: 0 {
-                bottom: 1px;
-                right: .3em;
+            padding: {
+                left: .15em; right: .3em;
+                top: .15em; bottom: .15em;
             };
             vertical-align: middle;
             border: 0;
@@ -176,11 +182,16 @@ table.form {
                 border: 0;
                 border-bottom: 1px solid $input-border;
                 margin-bottom: .25em;
-            }
+            };
+            padding: {
+                left: .15em; right: .15em;
+                top: .15em; bottom: .15em;
+            };
             &.instructions {
                 color: brown;
                 font-style: italic;
-                padding: 1em {
+                padding: {
+                    left: 1em; right: 1em;
                     top: .5em;
                     bottom: .5em;
                 };

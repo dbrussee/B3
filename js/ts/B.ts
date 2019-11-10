@@ -48,6 +48,12 @@ namespace B.util {
         el.appendChild(div);
         return div;
     }
+    export function clearSelection() {
+        if (window.getSelection) {
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+        }
+    }
     export function addOverlayText(el:any, text:string) {//}, timer:Stopwatch=null) {
         let container = document.createElement("div");
         container.style.cssText = "position: absolute; ";

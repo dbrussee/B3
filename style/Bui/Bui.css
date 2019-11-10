@@ -462,9 +462,16 @@ table.form {
 }
 
 table.form tr.header {
-  background-image: linear-gradient(45deg, darkcyan, cornflowerblue);
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-color: #0099cc;
+}
+
+table.form tr.header th {
+  color: white;
+  text-align: left;
+  padding-left: .15em;
+  padding-right: .15em;
+  padding-top: .15em;
+  padding-bottom: .15em;
 }
 
 table.form tr {
@@ -477,9 +484,10 @@ table.form tr th {
   color: navy;
   font-weight: bold;
   text-align: right;
-  padding: 0;
-  padding-bottom: 1px;
+  padding-left: .15em;
   padding-right: .3em;
+  padding-top: .15em;
+  padding-bottom: .15em;
   vertical-align: middle;
   border: 0;
   font-weight: normal;
@@ -499,6 +507,10 @@ table.form tr th.head {
 
 table.form tr td {
   vertical-align: top;
+  padding-left: .15em;
+  padding-right: .15em;
+  padding-top: .15em;
+  padding-bottom: .15em;
 }
 
 table.form tr td input:not([type]),
@@ -511,7 +523,8 @@ table.form tr td input[type="text"] {
 table.form tr td.instructions {
   color: brown;
   font-style: italic;
-  padding: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
   padding-top: .5em;
   padding-bottom: .5em;
   background-image: -webkit-gradient(linear, left bottom, left top, from(white), color-stop(whitesmoke), to(white));
@@ -597,12 +610,12 @@ body {
   min-height: 100%;
 }
 
-span.anchor {
+.anchor {
   color: blue;
   cursor: pointer;
 }
 
-span.anchor:hover {
+.anchor:hover {
   color: green;
   text-decoration: underline;
 }

@@ -30,10 +30,10 @@ namespace B {
             this.domObj = document.createElement("form");
             this.domObj.id = id;
             this.domObj.className = "BDialog";
-            this.domObj.style.cssText = "display:none; position:absolute;"
+            this.domObj.style.cssText = "display:none; position:absolute;";
             this.domObj.style.height = contentObj.style.height;
             this.domObj.style.width = contentObj.style.width;
-            this.domObj.ondblclick = function() { B.Dialog.get().center(); }
+            this.domObj.ondblclick = function() { B.Dialog.get().center(); B.util.clearSelection(); }
             contentObj.insertAdjacentElement("beforebegin", this.domObj);
 
             // Make the header box
