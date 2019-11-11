@@ -18,6 +18,26 @@
         padding-bottom: .4em;
         border-radius: .2em;
         margin:.2em;
+        div.hover_closer {
+            display: inline-block;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+            position: absolute;
+            opacity: .15;
+            right: .5em; top: .45em;
+            border-radius: 50%;
+            height: 1.4em; width: 1.4em;
+            color: red;
+            background-color: transparent;
+            text-shadow: none;
+            transition: .2s;
+            &:hover {
+                opacity: 1;
+                cursor: pointer;
+                background: white;
+            }
+        }
     }
 }
 .BDialogButton {

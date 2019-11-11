@@ -11,11 +11,13 @@ namespace B {
         private content = null;
         private scrollbox = null;
         private title = null;
+        private closerButton:HTMLElement = null;
         private buttonbox = null;
         private buttonList = [];
         private callback = null;
         private isOpen = false;
         private isFirstOpen = true;
+        private noclose = false; // Stop user from closing (Freeze)
         public form:Form = null;
         private tallness = 0;
         private wideness = 0;
@@ -37,13 +39,21 @@ namespace B {
             contentObj.insertAdjacentElement("beforebegin", this.domObj);
 
             // Make the header box
-            this.title = document.createElement("div");
-            this.title.className = "titlebar";
+            let titlebar = document.createElement("div");
+            titlebar.className = "titlebar";
+            this.title = document.createElement("span");
             let msg = contentObj.getAttribute("title");
             if (msg == null || msg == "") msg = "System Message";
             this.title.innerHTML = msg;
-            this.title.onmousedown = B.Dialog.startDrag;
-            this.domObj.appendChild(this.title);
+            titlebar.appendChild(this.title);
+            titlebar.onmousedown = B.Dialog.startDrag;
+            this.closerButton = document.createElement("div");
+            this.closerButton.className = "hover_closer";
+            this.closerButton.innerHTML = "&times;";
+            this.closerButton.onclick = popDialog;
+            titlebar.appendChild(this.closerButton);
+
+            this.domObj.appendChild(titlebar);
 
             this.scrollbox = document.createElement("div");
             // Make room for a header and buttons
@@ -115,6 +125,8 @@ namespace B {
             B.Dialog.overlay.style.zIndex = z;
             B.Dialog.overlay.style.display = "block";
             window.onkeydown = function(event:KeyboardEvent) {
+                let dlg = B.Dialog.get();
+                if (dlg.noclose) return;
                 if (event.key == "Escape") popDialog();
                 if (event.ctrlKey && event.key == "w") popDialog();
             };
@@ -131,6 +143,7 @@ namespace B {
                 this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
             }
             this.isFirstOpen = false;
+            this.setNoClose(false);
             B.Dialog.dialogStack.push(this.id);
             return this;
         }
@@ -171,6 +184,10 @@ namespace B {
                 this.addButton(btns[i]);
             }
             return this;
+        }
+        setNoClose(value:boolean=true) {
+            this.noclose = value;
+            this.closerButton.style.display = value ? "none" : "";
         }
         addButton(text:string, returnValue:string=""):B.Dialog {
             if (returnValue == "") {
@@ -221,7 +238,7 @@ namespace B {
                 frm.style.cssText = "height: 200px; width: 400px;";
                 document.body.appendChild(frm);
             }
-            let dlg = openDialog("B_SAY_DIALOG");
+            let dlg = B.Dialog.get("B_SAY_DIALOG");
             dlg.domObj.style.backgroundColor = "";
             return dlg;
         
@@ -284,7 +301,20 @@ function popDialog():B.Dialog {
         return null;
     }
 }
-
+function freeze(msg:string, title:string="System Message") {
+    let dlg = B.Dialog.getSay();
+    msg = "<div style='text-align:center;width:100%;height:100%;'><br>" + msg + "</div>";
+    dlg.setContent(msg);
+    dlg.setTitle(title);
+    dlg.setButtons();
+    dlg.setSize(200, 400, true);
+    dlg.open().center();
+    dlg.setNoClose();
+    return dlg;
+}
+function thaw() {
+    popDialog();
+}
 function say(msg:string, title:string="System Message", onclose:CallableFunction=function() {}, bgcolor:string="") {
     let dlg = B.Dialog.getSay();
     dlg.setContent(msg);
@@ -292,7 +322,8 @@ function say(msg:string, title:string="System Message", onclose:CallableFunction
     dlg.setCallback(onclose);
     dlg.setButtons("Close");
     dlg.domObj.style.backgroundColor = bgcolor;
-    dlg.setSize(200, 400, false);
+    dlg.setSize(200, 400, true);
+    dlg.open().center();
     return dlg;
 }
 function sayG(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
@@ -304,11 +335,18 @@ function sayW(msg:string, title:string="System Message", onclose:CallableFunctio
 function sayE(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
     return say(msg, title, onclose, "lightpink");
 }
-function sayGet(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, bgcolor:string="") {
+function sayGet(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, inputAsTextarea:boolean=false, allowTabs:boolean=false, bgcolor:string="") {
     let dlg = B.Dialog.getSay();
     let h = msg;
+    let dlgWidth = 400;
     h += "<table class='form' style='margin:0 auto; margin-top:.5em;'>";
-    h += "<tr><th>" + prompt + ":</th><td><input tabIndex=1 name='result' size='12'></td></tr>";
+    h += "<tr><th>" + prompt + ":</th>";
+    if (inputAsTextarea) {
+        h += "<td><textarea" + (allowTabs ? " class='ALLOWTABS'" : "") + " tabIndex=1 name='result' style='height:3em; width: 20em;'></td></tr>";
+        dlgWidth = 500;
+    } else {
+        h += "<td><input tabIndex=1 name='result' size='12'></td></tr>";
+    }
     h += "</table>";
     dlg.setContent(h);
     dlg.setTitle(title);
@@ -321,22 +359,24 @@ function sayGet(msg:string, prompt:string, defaultValue:string, title:string="Sy
     dlg.setCallback(masterCallback);
     dlg.setButtons("Save=SAVE", "Cancel=CANCEL");
     dlg.domObj.style.backgroundColor = bgcolor;
-    dlg.setSize(200, 400, false);
+    dlg.setSize(200, dlgWidth, true);
     let frm = B.getForm("B_SAY_DIALOG");
     frm.set("result", defaultValue);
     let tbox = frm.getElement("result");
     tbox.focus();
     tbox.select();
+    B.makeForm("B_SAY_DIALOG");
+    dlg.open().center();
     return dlg;
 }
-function sayGetG(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction) {
-    return sayGet(msg, prompt, defaultValue, title, callback, "aquamarine");
+function sayGetG(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, inputAsTextarea:boolean=false, allowTabs:boolean=false) {
+    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "aquamarine");
 }
-function sayGetW(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction) {
-    return sayGet(msg, prompt, defaultValue, title, callback, "lightyellow");
+function sayGetW(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, inputAsTextarea:boolean=false, allowTabs:boolean=false) {
+    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "lightyellow");
 }
-function sayGetE(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction) {
-    return sayGet(msg, prompt, defaultValue, title, callback, "lightpink");
+function sayGetE(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, inputAsTextarea:boolean=false, allowTabs:boolean=false) {
+    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "lightpink");
 }
 
 function choose(msg:string, title:string="System Message", buttons:string, callback:CallableFunction, bgcolor:string="") {
@@ -350,7 +390,8 @@ function choose(msg:string, title:string="System Message", buttons:string, callb
         dlg.addButton(list[i]);
     }
     dlg.domObj.style.backgroundColor = bgcolor;
-    dlg.setSize(200, 400, false);
+    dlg.setSize(200, 400, true);
+    dlg.open().center();
     return dlg;
 }
 function chooseG(msg:string, title:string="System Message", buttons:string, callback:CallableFunction) {

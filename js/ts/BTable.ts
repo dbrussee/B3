@@ -437,12 +437,14 @@ namespace B {
             if (text == undefined) text = "";
             //this.freezeTimer = new B.Stopwatch(50, true);
             this.freezeTextElement = B.util.addOverlayText(div, text);//, this.freezeTimer);
+            this.container.style.opacity = .6;
         }
         thaw() {
             if (this.freezeTimer != null) {
                 this.freezeTimer.stop();
             }
             B.util.killElement(this.freezeTextElement, this.freezeCover);
+            this.container.style.opacity = 1;
         }
         
     }

@@ -1,3 +1,5 @@
+/* $input-checked: rgba(27, 158, 27, 0.883); */
+/*$input-checked-disabled: rgba(194, 243, 197); */
 /* CUSTOM RADIO & CHECKBOXES http://stackoverflow.com/a/17541916/383904 */
 .rad,
 .tog,
@@ -76,7 +78,7 @@
   /* (RADIO CHECKED) <i> STYLE */
   margin-left: 0.84em;
   border: 1px solid transparent;
-  background: rgba(27, 158, 27, 0.883);
+  background: rgba(0, 0, 0, 0.7);
   -webkit-box-shadow: 0;
           box-shadow: 0;
 }
@@ -90,7 +92,7 @@
 
 .tog > input:disabled:checked + i:after {
   border: 1px solid transparent;
-  background: #c2f3c5;
+  background: rgba(0, 0, 0, 0.1);
   -webkit-box-shadow: 0;
           box-shadow: 0;
 }
@@ -100,18 +102,18 @@
   background: transparent;
   -webkit-box-shadow: 0;
           box-shadow: 0;
-  -webkit-box-shadow: 0.4em 0 #c2f3c5;
-          box-shadow: 0.4em 0 #c2f3c5;
+  -webkit-box-shadow: 0.4em 0 rgba(0, 0, 0, 0.1);
+          box-shadow: 0.4em 0 rgba(0, 0, 0, 0.1);
 }
 
 .tog:hover > input:checked + i:after {
   border: 1px solid transparent;
-  background: rgba(27, 158, 27, 0.883);
+  background: rgba(0, 0, 0, 0.7);
   -webkit-box-shadow: 0;
           box-shadow: 0;
   border: 1px solid dimgray;
-  -webkit-box-shadow: -0.4em 0 #c2f3c5;
-          box-shadow: -0.4em 0 #c2f3c5;
+  -webkit-box-shadow: -0.4em 0 rgba(0, 0, 0, 0.1);
+          box-shadow: -0.4em 0 rgba(0, 0, 0, 0.1);
 }
 
 .tog:hover > input:disabled + i:after {
@@ -127,7 +129,7 @@
 .tog:hover > input:disabled:checked + i:after {
   margin-left: 0.84em;
   border: 1px solid transparent;
-  background: #c2f3c5;
+  background: rgba(0, 0, 0, 0.1);
   -webkit-box-shadow: 0;
           box-shadow: 0;
   -webkit-box-shadow: 0 0;
@@ -137,13 +139,13 @@
 .rad:hover > input + i {
   -webkit-box-shadow: inset 0 0 0 0.24em #fff;
           box-shadow: inset 0 0 0 0.24em #fff;
-  background: #c2f3c5;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .rad:hover > input:checked + i {
   -webkit-box-shadow: inset 0 0 0 0.24em #fff;
           box-shadow: inset 0 0 0 0.24em #fff;
-  background: rgba(27, 158, 27, 0.883);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .rad:hover > input:disabled + i {
@@ -154,7 +156,7 @@
 .rad:hover > input:checked:disabled + i {
   -webkit-box-shadow: inset 0 0 0 0.24em #fff;
           box-shadow: inset 0 0 0 0.24em #fff;
-  background: #c2f3c5;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .rad > input + i {
@@ -168,7 +170,7 @@
 .rad > input:checked + i {
   -webkit-box-shadow: inset 0 0 0 0.24em #fff;
           box-shadow: inset 0 0 0 0.24em #fff;
-  background: rgba(27, 158, 27, 0.883);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .rad > input:disabled + i {
@@ -179,7 +181,7 @@
 .rad > input:checked:disabled + i {
   -webkit-box-shadow: inset 0 0 0 0.24em #fff;
           box-shadow: inset 0 0 0 0.24em #fff;
-  background: #c2f3c5;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .chb > input + i {
@@ -192,7 +194,7 @@
 }
 
 .chb > input:checked + i {
-  background: rgba(27, 158, 27, 0.883);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .chb > input:disabled + i {
@@ -204,17 +206,17 @@
 .chb > input:disabled:checked + i {
   -webkit-box-shadow: inset 0 0 0 0.24em #fff;
           box-shadow: inset 0 0 0 0.24em #fff;
-  background: #c2f3c5;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .chb:hover > input + i {
   -webkit-box-shadow: inset 0 0 0 0.24em #fff;
           box-shadow: inset 0 0 0 0.24em #fff;
-  background: #c2f3c5;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .chb:hover > input:checked + i {
-  background: rgba(27, 158, 27, 0.883);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .chb:hover > input:disabled + i {
@@ -226,7 +228,7 @@
 .chb:hover > input:disabled:checked + i {
   -webkit-box-shadow: inset 0 0 0 0.24em #fff;
           box-shadow: inset 0 0 0 0.24em #fff;
-  background: #c2f3c5;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .chk > input + i {
@@ -256,19 +258,19 @@
 }
 
 .chk > input:checked + i:before {
-  border-color: rgba(27, 158, 27, 0.883);
+  border-color: rgba(0, 0, 0, 0.7);
 }
 
 .chk > input:disabled:checked + i:before {
-  border-color: #c2f3c5;
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .chk:hover > input + i:before {
-  border-color: #c2f3c5;
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .chk:hover > input:checked + i:before {
-  border-color: rgba(27, 158, 27, 0.883);
+  border-color: rgba(0, 0, 0, 0.7);
 }
 
 .chk:hover > input:disabled + i:before {
@@ -276,7 +278,7 @@
 }
 
 .chk:hover > input:disabled:checked + i:before {
-  border-color: #c2f3c5;
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .BDialog {
@@ -301,6 +303,31 @@
   padding-bottom: .4em;
   border-radius: .2em;
   margin: .2em;
+}
+
+.BDialog div.titlebar div.hover_closer {
+  display: inline-block;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+  position: absolute;
+  opacity: .15;
+  right: .5em;
+  top: .45em;
+  border-radius: 50%;
+  height: 1.4em;
+  width: 1.4em;
+  color: red;
+  background-color: transparent;
+  text-shadow: none;
+  -webkit-transition: .2s;
+  transition: .2s;
+}
+
+.BDialog div.titlebar div.hover_closer:hover {
+  opacity: 1;
+  cursor: pointer;
+  background: white;
 }
 
 .BDialogButton {

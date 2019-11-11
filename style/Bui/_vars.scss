@@ -6,8 +6,11 @@ $tshadow: 2px 2px 2px black;
 $tshadow1: 1px 1px 1px black;
 $bcnc-bg: #0099cc;
 $bcnc-pickedBackground: rgba(147, 213, 248,.5);
-$input-checked: rgba(27, 158, 27, 0.883);
-$input-checked-disabled: rgb(194, 243, 197);
+
+/* $input-checked: rgba(27, 158, 27, 0.883); */
+$input-checked: rgba(0, 0, 0, .7);
+/*$input-checked-disabled: rgba(194, 243, 197); */
+$input-checked-disabled: rgba(0, 0, 0, .1);
 $radckb-size: 1.2em;
 $input-border: dimgray;
 $input-border-disabled: rgb(194, 190, 190);

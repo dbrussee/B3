@@ -46,11 +46,9 @@ var B;
             var clrA = "white";
             var clrB = "cadetblue";
             div.style.cssText = "position:absolute; " +
-                "z-index:1; " +
+                "z-index:" + (parseInt(el.style.zIndex) + 1) + "; " +
                 "background: repeating-linear-gradient(-45deg, " + clrA + ", " + clrA + " 10px, " + clrB + " 10px, " + clrB + " 20px); " +
-                "-ms-filter:'progid:DXImageTransform.Microsoft.Alpha(Opacity=10)'; " + // IE8
-                "filter: alpha(opacity=10); " + // IE 5-7
-                "opacity: 0.10; " +
+                "opacity: 0.1; " +
                 "cursor: default; " +
                 "left:0; top:0; width:100%;height:100%; " +
                 "overflow:auto; ";
@@ -68,14 +66,15 @@ var B;
         function addOverlayText(el, text) {
             var container = document.createElement("div");
             container.style.cssText = "position: absolute; ";
+            container.style.zIndex = (parseInt(el.style.zIndex) + 1).toString();
             container.style.height = el.style.height;
             container.style.width = el.style.width;
             container.style.top = el.style.top;
             container.style.left = el.style.left;
             el.insertAdjacentElement("afterend", container);
             var div = document.createElement("div");
-            div.style.cssText = "z-index: 2; " +
-                "padding: .5em; background: rgba(240,248,255,.9); border-radius: .2em; width: 75%;" +
+            div.style.cssText = "" +
+                "padding: .5em; color: black; background: white; border-radius: .2em; width: 75%;" +
                 "position: absolute; top: 50%; left: 50%; text-align: center; box-shadow: 1px 1px 2px black;" +
                 "-ms-transform: translate(-50%, -50%); transform: translate(-50%, -50%); ";
             /*if (timer != null) {
@@ -133,6 +132,105 @@ var B;
         util.compare = compare;
     })(util = B.util || (B.util = {}));
 })(B || (B = {}));
+(function (B) {
+    var Timer = /** @class */ (function () {
+        function Timer(id, target, renderAs, startup) {
+            if (renderAs === void 0) { renderAs = "LINES"; }
+            if (startup === void 0) { startup = true; }
+            this.secondsElement = null;
+            this.minutesElement = null;
+            this.hoursElement = null;
+            this.renderAs = "";
+            this.startTime = null;
+            this.target = null;
+            this.active = false;
+            if (Timer.timers[id] != null)
+                return Timer.timers[id];
+            this.startTime = new Date();
+            if (typeof target == "string")
+                target = document.getElementById(target);
+            this.target = target;
+            this.renderAs = renderAs;
+            if (Timer.timerList.length == 0) {
+                //if (window.requestAnimationFrame) {
+                //    window.requestAnimationFrame(Timer.renderTimers);
+                //} else {
+                window.setTimeout(Timer.renderTimers, 1000);
+                //}
+            }
+            if (renderAs == "LINES") {
+                this.secondsElement = document.createElement("div");
+                this.secondsElement.style.borderTop = "4px solid green";
+                this.secondsElement.style.width = "0";
+                this.minutesElement = document.createElement("div");
+                this.minutesElement.style.borderTop = "4px solid blue";
+                this.minutesElement.style.width = "0";
+                this.hoursElement = document.createElement("div");
+                this.hoursElement.style.borderTop = "4px solid red";
+                this.hoursElement.style.width = "0";
+                this.target.appendChild(this.secondsElement);
+                this.target.appendChild(this.minutesElement);
+                this.target.appendChild(this.hoursElement);
+            }
+            Timer.timers[id] = this;
+            Timer.timerList.push(this);
+            this.active = startup;
+        }
+        Timer.prototype.render = function () {
+            var now = new Date();
+            var millis = (now.getTime() - this.startTime.getTime());
+            var secs = millis / 1000;
+            millis = parseInt((millis % 60).toString(), 10);
+            secs = parseInt(secs.toString(), 10);
+            var days = parseInt((secs / (24 * 60 * 60)).toString(), 10);
+            secs -= (days * 24 * 60 * 60);
+            var hours = parseInt((secs / (60 * 60)).toString(), 10);
+            secs -= (hours * 60 * 60);
+            var mins = parseInt((secs / 60).toString(), 10);
+            secs -= (mins * 60);
+            if (this.renderAs == "LINES") {
+                this.secondsElement.style.width = ((secs / 60) * 100) + "%";
+                this.minutesElement.style.width = ((mins / 60) * 100) + "%";
+                if (hours > 24)
+                    hours = 24;
+                this.hoursElement.style.width = ((hours / 24) * 100) + "%";
+            }
+            else if (this.renderAs == "TEXT") {
+                var text = "";
+                if (days > 0)
+                    text = days + "d";
+                if (hours > 0)
+                    text += hours + ":";
+                if (mins < 10)
+                    text += "0";
+                text += mins + ":";
+                if (secs < 10)
+                    text += "0";
+                text += secs;
+                this.target.innerHTML = text;
+            }
+        };
+        Timer.renderTimers = function () {
+            for (var i = 0; i < Timer.timerList.length; i++) {
+                var t = Timer.timerList[i];
+                if (t.active) {
+                    t.render();
+                }
+            }
+            if (window.requestAnimationFrame) {
+                window.requestAnimationFrame(Timer.renderTimers);
+            }
+            else {
+                window.setTimeout(Timer.renderTimers, 20);
+            }
+        };
+        Timer.handler = null;
+        Timer.timers = {};
+        Timer.timerList = [];
+        return Timer;
+    }());
+    B.Timer = Timer;
+})(B || (B = {}));
 console.log(B.version);
 var B;
 (function (B) {
@@ -144,11 +242,13 @@ var B;
             this.content = null;
             this.scrollbox = null;
             this.title = null;
+            this.closerButton = null;
             this.buttonbox = null;
             this.buttonList = [];
             this.callback = null;
             this.isOpen = false;
             this.isFirstOpen = true;
+            this.noclose = false; // Stop user from closing (Freeze)
             this.form = null;
             this.tallness = 0;
             this.wideness = 0;
@@ -168,14 +268,21 @@ var B;
             this.domObj.ondblclick = function () { B.Dialog.get().center(); B.util.clearSelection(); };
             contentObj.insertAdjacentElement("beforebegin", this.domObj);
             // Make the header box
-            this.title = document.createElement("div");
-            this.title.className = "titlebar";
+            var titlebar = document.createElement("div");
+            titlebar.className = "titlebar";
+            this.title = document.createElement("span");
             var msg = contentObj.getAttribute("title");
             if (msg == null || msg == "")
                 msg = "System Message";
             this.title.innerHTML = msg;
-            this.title.onmousedown = B.Dialog.startDrag;
-            this.domObj.appendChild(this.title);
+            titlebar.appendChild(this.title);
+            titlebar.onmousedown = B.Dialog.startDrag;
+            this.closerButton = document.createElement("div");
+            this.closerButton.className = "hover_closer";
+            this.closerButton.innerHTML = "&times;";
+            this.closerButton.onclick = popDialog;
+            titlebar.appendChild(this.closerButton);
+            this.domObj.appendChild(titlebar);
             this.scrollbox = document.createElement("div");
             // Make room for a header and buttons
             this.scrollbox.style.cssText = "min-height:calc(100% - 5.1em); overflow-x:hidden; overflow-y:auto";
@@ -243,6 +350,9 @@ var B;
             B.Dialog.overlay.style.zIndex = z;
             B.Dialog.overlay.style.display = "block";
             window.onkeydown = function (event) {
+                var dlg = B.Dialog.get();
+                if (dlg.noclose)
+                    return;
                 if (event.key == "Escape")
                     popDialog();
                 if (event.ctrlKey && event.key == "w")
@@ -262,6 +372,7 @@ var B;
                 this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
             }
             this.isFirstOpen = false;
+            this.setNoClose(false);
             B.Dialog.dialogStack.push(this.id);
             return this;
         };
@@ -312,6 +423,11 @@ var B;
                 this.addButton(btns[i]);
             }
             return this;
+        };
+        Dialog.prototype.setNoClose = function (value) {
+            if (value === void 0) { value = true; }
+            this.noclose = value;
+            this.closerButton.style.display = value ? "none" : "";
         };
         Dialog.prototype.addButton = function (text, returnValue) {
             if (returnValue === void 0) { returnValue = ""; }
@@ -364,7 +480,7 @@ var B;
                 frm.style.cssText = "height: 200px; width: 400px;";
                 document.body.appendChild(frm);
             }
-            var dlg = openDialog("B_SAY_DIALOG");
+            var dlg = B.Dialog.get("B_SAY_DIALOG");
             dlg.domObj.style.backgroundColor = "";
             return dlg;
         };
@@ -437,6 +553,21 @@ function popDialog() {
         return null;
     }
 }
+function freeze(msg, title) {
+    if (title === void 0) { title = "System Message"; }
+    var dlg = B.Dialog.getSay();
+    msg = "<div style='text-align:center;width:100%;height:100%;'><br>" + msg + "</div>";
+    dlg.setContent(msg);
+    dlg.setTitle(title);
+    dlg.setButtons();
+    dlg.setSize(200, 400, true);
+    dlg.open().center();
+    dlg.setNoClose();
+    return dlg;
+}
+function thaw() {
+    popDialog();
+}
 function say(msg, title, onclose, bgcolor) {
     if (title === void 0) { title = "System Message"; }
     if (onclose === void 0) { onclose = function () { }; }
@@ -447,7 +578,8 @@ function say(msg, title, onclose, bgcolor) {
     dlg.setCallback(onclose);
     dlg.setButtons("Close");
     dlg.domObj.style.backgroundColor = bgcolor;
-    dlg.setSize(200, 400, false);
+    dlg.setSize(200, 400, true);
+    dlg.open().center();
     return dlg;
 }
 function sayG(msg, title, onclose) {
@@ -465,13 +597,23 @@ function sayE(msg, title, onclose) {
     if (onclose === void 0) { onclose = function () { }; }
     return say(msg, title, onclose, "lightpink");
 }
-function sayGet(msg, prompt, defaultValue, title, callback, bgcolor) {
+function sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, bgcolor) {
     if (title === void 0) { title = "System Message"; }
+    if (inputAsTextarea === void 0) { inputAsTextarea = false; }
+    if (allowTabs === void 0) { allowTabs = false; }
     if (bgcolor === void 0) { bgcolor = ""; }
     var dlg = B.Dialog.getSay();
     var h = msg;
+    var dlgWidth = 400;
     h += "<table class='form' style='margin:0 auto; margin-top:.5em;'>";
-    h += "<tr><th>" + prompt + ":</th><td><input tabIndex=1 name='result' size='12'></td></tr>";
+    h += "<tr><th>" + prompt + ":</th>";
+    if (inputAsTextarea) {
+        h += "<td><textarea" + (allowTabs ? " class='ALLOWTABS'" : "") + " tabIndex=1 name='result' style='height:3em; width: 20em;'></td></tr>";
+        dlgWidth = 500;
+    }
+    else {
+        h += "<td><input tabIndex=1 name='result' size='12'></td></tr>";
+    }
     h += "</table>";
     dlg.setContent(h);
     dlg.setTitle(title);
@@ -484,25 +626,33 @@ function sayGet(msg, prompt, defaultValue, title, callback, bgcolor) {
     dlg.setCallback(masterCallback);
     dlg.setButtons("Save=SAVE", "Cancel=CANCEL");
     dlg.domObj.style.backgroundColor = bgcolor;
-    dlg.setSize(200, 400, false);
+    dlg.setSize(200, dlgWidth, true);
     var frm = B.getForm("B_SAY_DIALOG");
     frm.set("result", defaultValue);
     var tbox = frm.getElement("result");
     tbox.focus();
     tbox.select();
+    B.makeForm("B_SAY_DIALOG");
+    dlg.open().center();
     return dlg;
 }
-function sayGetG(msg, prompt, defaultValue, title, callback) {
+function sayGetG(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs) {
     if (title === void 0) { title = "System Message"; }
-    return sayGet(msg, prompt, defaultValue, title, callback, "aquamarine");
+    if (inputAsTextarea === void 0) { inputAsTextarea = false; }
+    if (allowTabs === void 0) { allowTabs = false; }
+    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "aquamarine");
 }
-function sayGetW(msg, prompt, defaultValue, title, callback) {
+function sayGetW(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs) {
     if (title === void 0) { title = "System Message"; }
-    return sayGet(msg, prompt, defaultValue, title, callback, "lightyellow");
+    if (inputAsTextarea === void 0) { inputAsTextarea = false; }
+    if (allowTabs === void 0) { allowTabs = false; }
+    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "lightyellow");
 }
-function sayGetE(msg, prompt, defaultValue, title, callback) {
+function sayGetE(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs) {
     if (title === void 0) { title = "System Message"; }
-    return sayGet(msg, prompt, defaultValue, title, callback, "lightpink");
+    if (inputAsTextarea === void 0) { inputAsTextarea = false; }
+    if (allowTabs === void 0) { allowTabs = false; }
+    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "lightpink");
 }
 function choose(msg, title, buttons, callback, bgcolor) {
     if (title === void 0) { title = "System Message"; }
@@ -517,7 +667,8 @@ function choose(msg, title, buttons, callback, bgcolor) {
         dlg.addButton(list[i]);
     }
     dlg.domObj.style.backgroundColor = bgcolor;
-    dlg.setSize(200, 400, false);
+    dlg.setSize(200, 400, true);
+    dlg.open().center();
     return dlg;
 }
 function chooseG(msg, title, buttons, callback) {
@@ -550,6 +701,11 @@ function askE(msg, title, callback) {
 }
 var B;
 (function (B) {
+    function makeForm(id, allowSubmit) {
+        if (allowSubmit === void 0) { allowSubmit = false; }
+        return new Form(id, allowSubmit, true);
+    }
+    B.makeForm = makeForm;
     function getForm(id, allowSubmit) {
         if (allowSubmit === void 0) { allowSubmit = false; }
         var frm = Form.cache[id];
@@ -560,12 +716,15 @@ var B;
     }
     B.getForm = getForm;
     var Form = /** @class */ (function () {
-        function Form(id, allowSubmit) {
+        function Form(id, allowSubmit, forceMake) {
             if (allowSubmit === void 0) { allowSubmit = false; }
+            if (forceMake === void 0) { forceMake = false; }
             this.id = "";
             this.form = null;
-            if (Form.cache[id] != null) {
-                return Form.cache[id];
+            if (!forceMake) {
+                if (Form.cache[id] != null) {
+                    return Form.cache[id];
+                }
             }
             this.id = id;
             this.form = document.forms.namedItem(id);
@@ -575,6 +734,19 @@ var B;
                     return false;
                 };
             }
+            for (var i = 0; i < this.form.elements.length; i++) {
+                var el = this.form.elements.item(i);
+                if (el.type == "textarea" && el.className.indexOf("ALLOWTABS") >= 0) {
+                    el.onkeydown = function (e) {
+                        if (e.keyCode == 9 || e.which == 9) {
+                            e.preventDefault();
+                            var s = this.selectionStart;
+                            this.value = this.value.substring(0, this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
+                            this.selectionEnd = s + 1;
+                        }
+                    };
+                }
+            }
             Form.cache[id] = this;
         }
         Form.prototype.get = function () {
@@ -582,7 +754,7 @@ var B;
             var els = this.form.elements;
             for (var elnum = 0; elnum < els.length; elnum++) {
                 var el = els.item(elnum);
-                if (el.type == "" || el.type == "text") {
+                if (el.type == "" || el.type == "text" || el.type == "textarea") {
                     items[el.name] = el.value.trim();
                 }
                 else if (el.type == "checkbox") {
@@ -609,6 +781,10 @@ var B;
         };
         Form.prototype.getElement = function (field) {
             return this.form.elements[field];
+        };
+        Form.prototype.click = function (field) {
+            var el = this.getElement(field);
+            el.click();
         };
         Form.prototype.set = function () {
             var args = [];
@@ -1103,12 +1279,14 @@ var B;
                 text = "";
             //this.freezeTimer = new B.Stopwatch(50, true);
             this.freezeTextElement = B.util.addOverlayText(div, text); //, this.freezeTimer);
+            this.container.style.opacity = .6;
         };
         Table.prototype.thaw = function () {
             if (this.freezeTimer != null) {
                 this.freezeTimer.stop();
             }
             B.util.killElement(this.freezeTextElement, this.freezeCover);
+            this.container.style.opacity = 1;
         };
         Table.cache = null;
         return Table;
