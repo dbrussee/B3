@@ -137,6 +137,7 @@ var B;
         function Timer(id, target, renderAs, startup) {
             if (renderAs === void 0) { renderAs = "LINES"; }
             if (startup === void 0) { startup = true; }
+            this.id = "";
             this.secondsElement = null;
             this.minutesElement = null;
             this.hoursElement = null;
@@ -146,10 +147,12 @@ var B;
             this.active = false;
             if (Timer.timers[id] != null)
                 return Timer.timers[id];
+            this.id = id;
             this.startTime = new Date();
             if (typeof target == "string")
                 target = document.getElementById(target);
             this.target = target;
+            this.target.style.position = "relative";
             this.renderAs = renderAs;
             if (Timer.timerList.length == 0) {
                 //if (window.requestAnimationFrame) {
@@ -172,10 +175,45 @@ var B;
                 this.target.appendChild(this.minutesElement);
                 this.target.appendChild(this.hoursElement);
             }
+            if (renderAs == "SPIN") {
+                this.target.style.width = "38px";
+                this.target.style.height = "38px";
+                this.secondsElement = document.createElement("div");
+                this.secondsElement.style.cssText = "position:absolute; height:100%; width:100%; top:0; left:0";
+                this.secondsElement.className = "loader";
+                this.target.appendChild(this.secondsElement);
+                this.minutesElement = document.createElement("div");
+                ;
+                this.minutesElement.style.cssText = "line-height: 38px; text-align:center; font-size:8pt; position:absolute; height:100%; width:100%; top:0; left:0";
+                this.target.appendChild(this.minutesElement);
+            }
             Timer.timers[id] = this;
             Timer.timerList.push(this);
             this.active = startup;
         }
+        Timer.add = function (id, target, renderAs, startup) {
+            if (renderAs === void 0) { renderAs = "LINES"; }
+            if (startup === void 0) { startup = true; }
+            return new B.Timer(id, target, renderAs, startup);
+        };
+        Timer.prototype.start = function () {
+            this.active = true;
+        };
+        Timer.prototype.stop = function () {
+            this.active = false;
+        };
+        Timer.prototype["delete"] = function () {
+            delete B.Timer.timers[this.id];
+            for (var i = 0; i < B.Timer.timerList.length; i++) {
+                if (B.Timer.timerList[i] == this.id) {
+                    B.Timer.timerList.splice(i, 1);
+                }
+            }
+        };
+        Timer.prototype.show = function () {
+        };
+        Timer.prototype.hide = function () {
+        };
         Timer.prototype.render = function () {
             var now = new Date();
             var millis = (now.getTime() - this.startTime.getTime());
@@ -195,19 +233,28 @@ var B;
                     hours = 24;
                 this.hoursElement.style.width = ((hours / 24) * 100) + "%";
             }
-            else if (this.renderAs == "TEXT") {
+            if (this.renderAs == "SPIN" || this.renderAs == "TEXT") {
                 var text = "";
                 if (days > 0)
                     text = days + "d";
                 if (hours > 0)
-                    text += hours + ":";
-                if (mins < 10)
-                    text += "0";
-                text += mins + ":";
-                if (secs < 10)
-                    text += "0";
-                text += secs;
-                this.target.innerHTML = text;
+                    text += hours + "h";
+                if (text != "")
+                    text += "<br>";
+                //if (mins < 10) text += "0";
+                if (mins > 0)
+                    text += mins + ":";
+                if (secs > 0) {
+                    if (secs < 10)
+                        text += "0";
+                    text += secs;
+                }
+                if (this.renderAs == "SPIN") {
+                    this.minutesElement.innerHTML = text;
+                }
+                else if (this.renderAs == "TEXT") {
+                    this.target.innerHTML = text;
+                }
             }
         };
         Timer.renderTimers = function () {
@@ -217,11 +264,13 @@ var B;
                     t.render();
                 }
             }
-            if (window.requestAnimationFrame) {
-                window.requestAnimationFrame(Timer.renderTimers);
-            }
-            else {
-                window.setTimeout(Timer.renderTimers, 20);
+            if (Timer.timerList.length > 0) {
+                if (window.requestAnimationFrame) {
+                    window.requestAnimationFrame(Timer.renderTimers);
+                }
+                else {
+                    window.setTimeout(Timer.renderTimers, 20);
+                }
             }
         };
         Timer.handler = null;
@@ -244,6 +293,7 @@ var B;
             this.title = null;
             this.closerButton = null;
             this.buttonbox = null;
+            this.bottomMessageBox = null;
             this.buttonList = [];
             this.callback = null;
             this.isOpen = false;
@@ -297,15 +347,21 @@ var B;
             // Move the scrollbox into the container
             this.domObj.appendChild(this.scrollbox);
             // Add a button box for the bottom of the container
+            var buttonboxContainer = document.createElement("div");
+            buttonboxContainer.style.cssText = "position:relative;";
             this.buttonbox = document.createElement("div");
             this.buttonbox.style.cssText = "border-top: 1px dotted black; padding: .5rem; text-align: right; position:relative; bottom:0";
-            this.domObj.appendChild(this.buttonbox);
+            buttonboxContainer.appendChild(this.buttonbox);
             var btns = this.content.getElementsByClassName("BDialogButton");
             while (btns.length > 0) {
                 var btn = btns.item(0);
                 this.buttonbox.appendChild(btn);
                 this.buttonList.push(btn);
             }
+            this.bottomMessageBox = document.createElement("div");
+            this.bottomMessageBox.style.cssText = "line-height:40px;position:absolute; height:100%; left:.5em; top:.2em";
+            buttonboxContainer.appendChild(this.bottomMessageBox);
+            this.domObj.appendChild(buttonboxContainer);
             B.Dialog.dialogs[id] = this;
             B.Dialog.dialogCount++;
             if (B.Dialog.dialogCount == 1) {
@@ -331,6 +387,10 @@ var B;
             this.title.innerHTML = html;
             return this;
         };
+        Dialog.prototype.setBottomMessage = function (html) {
+            if (html === void 0) { html = ""; }
+            this.bottomMessageBox.innerHTML = html;
+        };
         Dialog.prototype.setCallback = function (callback) {
             this.callback = callback;
             return this;
@@ -354,8 +414,6 @@ var B;
                 if (dlg.noclose)
                     return;
                 if (event.key == "Escape")
-                    popDialog();
-                if (event.ctrlKey && event.key == "w")
                     popDialog();
             };
             this.domObj.style.zIndex = (z + 1).toString();
@@ -482,6 +540,7 @@ var B;
             }
             var dlg = B.Dialog.get("B_SAY_DIALOG");
             dlg.domObj.style.backgroundColor = "";
+            dlg.setBottomMessage("");
             return dlg;
         };
         Dialog.startDrag = function (event) {
@@ -563,9 +622,12 @@ function freeze(msg, title) {
     dlg.setSize(200, 400, true);
     dlg.open().center();
     dlg.setNoClose();
+    dlg.setBottomMessage("<div id='B_FREEZE_TIMER'></div>");
+    B.Timer.add("B_FREEZE_TIMER", "B_FREEZE_TIMER", "SPIN");
     return dlg;
 }
 function thaw() {
+    B.Timer.timers["B_FREEZE_TIMER"]["delete"]();
     popDialog();
 }
 function say(msg, title, onclose, bgcolor) {

@@ -36,8 +36,6 @@
         tblA.addRow("10. First Column", "Second", "Third");
 
         setTestButton();
-        new B.Timer("master", "masterTime");
-        new B.Timer("another", "textTime", "TEXT");
     }
     function test() {
         var frm = new B.getForm("frmA");
@@ -104,8 +102,8 @@
     }
 
     function testFreeze() {
-        freeze("This is my freeze message");
-        window.setTimeout(thaw, 5000);
+        freeze("This is my freeze message. Thaws in 15 seconds");
+        window.setTimeout(thaw, 15000);
     }
     
     </script>
@@ -127,7 +125,7 @@
         </form>
         <br>
         <div style='width: 100%' id='masterTime'></div>
-        <div style='font-size:.7em' id='textTime'></div>
+        <div id='textTime'></div>
         <br><br>
         <table id='tblA'>
             <tr><th data='col1,200'>Column 1</th>

@@ -118,6 +118,7 @@ namespace B.util {
 } 
 namespace B {
     export class Timer {
+        public id:string = "";
         public static handler = null;
         public static timers = {}
         private static timerList = [];
@@ -130,9 +131,11 @@ namespace B {
         public active:boolean = false;
         constructor(id:string, target:HTMLElement|string, renderAs:string="LINES", startup:boolean=true) {
             if (Timer.timers[id] != null) return Timer.timers[id];
+            this.id = id;
             this.startTime = new Date();
             if (typeof target == "string") target = document.getElementById(target);
             this.target = target;
+            this.target.style.position = "relative";
             this.renderAs = renderAs;
             if (Timer.timerList.length == 0) {
                 //if (window.requestAnimationFrame) {
@@ -154,11 +157,44 @@ namespace B {
                 this.target.appendChild(this.secondsElement);
                 this.target.appendChild(this.minutesElement);
                 this.target.appendChild(this.hoursElement);
+            } if (renderAs == "SPIN") {
+                this.target.style.width = "38px";
+                this.target.style.height = "38px";
+                this.secondsElement = document.createElement("div");
+                this.secondsElement.style.cssText = "position:absolute; height:100%; width:100%; top:0; left:0";
+                this.secondsElement.className = "loader";
+                this.target.appendChild(this.secondsElement);
+                this.minutesElement = document.createElement("div");;
+                this.minutesElement.style.cssText = "line-height: 38px; text-align:center; font-size:8pt; position:absolute; height:100%; width:100%; top:0; left:0";
+                this.target.appendChild(this.minutesElement);
             }
             Timer.timers[id] = this;
             Timer.timerList.push(this);
 
             this.active = startup;
+        }
+        static add(id:string, target:HTMLElement|string, renderAs:string="LINES", startup:boolean=true) {
+            return new B.Timer(id, target, renderAs, startup);
+        }
+        start() {
+            this.active = true;
+        }
+        stop() {
+            this.active = false;
+        }
+        delete() {
+            delete B.Timer.timers[this.id];
+            for (let i = 0; i < B.Timer.timerList.length; i++) {
+                if (B.Timer.timerList[i] == this.id) {
+                    B.Timer.timerList.splice(i,1);
+                }
+            }
+        }
+        show() {
+
+        }
+        hide() {
+
         }
         render() {
             let now:Date = new Date();
@@ -178,15 +214,23 @@ namespace B {
                 this.minutesElement.style.width = ((mins / 60) * 100) + "%";
                 if (hours > 24) hours = 24;
                 this.hoursElement.style.width = ((hours / 24) * 100) + "%";
-            } else if (this.renderAs == "TEXT") {
+            }
+            if (this.renderAs == "SPIN" || this.renderAs == "TEXT") {
                 let text = "";
                 if (days > 0) text = days + "d";
-                if (hours > 0) text += hours + ":";
-                if (mins < 10) text += "0";
-                text += mins + ":";
-                if (secs < 10) text += "0";
-                text += secs;
-                this.target.innerHTML = text;
+                if (hours > 0) text += hours + "h";
+                if (text != "") text += "<br>";
+                //if (mins < 10) text += "0";
+                if (mins > 0) text += mins + ":";
+                if(secs > 0) {
+                    if (secs < 10) text += "0";
+                    text += secs;
+                }
+                if (this.renderAs == "SPIN") {
+                    this.minutesElement.innerHTML = text;
+                } else if (this.renderAs == "TEXT") {
+                    this.target.innerHTML = text;
+                }
             }
         }
 
@@ -197,14 +241,14 @@ namespace B {
                     t.render();
                 }
             }
-            if (window.requestAnimationFrame) {
-                window.requestAnimationFrame(Timer.renderTimers);
-            } else {
-                window.setTimeout(Timer.renderTimers, 20);
+            if (Timer.timerList.length > 0) {
+                if (window.requestAnimationFrame) {
+                    window.requestAnimationFrame(Timer.renderTimers);
+                } else {
+                    window.setTimeout(Timer.renderTimers, 20);
+                }
             }
-
         }
-
     }
 }
 

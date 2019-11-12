@@ -13,6 +13,7 @@ namespace B {
         private title = null;
         private closerButton:HTMLElement = null;
         private buttonbox = null;
+        private bottomMessageBox:HTMLElement = null;
         private buttonList = [];
         private callback = null;
         private isOpen = false;
@@ -71,15 +72,21 @@ namespace B {
             this.domObj.appendChild(this.scrollbox);
 
             // Add a button box for the bottom of the container
+            let buttonboxContainer = document.createElement("div");
+            buttonboxContainer.style.cssText = "position:relative;";
             this.buttonbox = document.createElement("div");
             this.buttonbox.style.cssText = "border-top: 1px dotted black; padding: .5rem; text-align: right; position:relative; bottom:0"
-            this.domObj.appendChild(this.buttonbox);
+            buttonboxContainer.appendChild(this.buttonbox);
             let btns = this.content.getElementsByClassName("BDialogButton");
             while (btns.length > 0) {
                 let btn = btns.item(0);
                 this.buttonbox.appendChild(btn);
                 this.buttonList.push(btn);
             }    
+            this.bottomMessageBox = document.createElement("div");
+            this.bottomMessageBox.style.cssText = "line-height:40px;position:absolute; height:100%; left:.5em; top:.2em";
+            buttonboxContainer.appendChild(this.bottomMessageBox);
+            this.domObj.appendChild(buttonboxContainer);
 
             B.Dialog.dialogs[id] = this;
             B.Dialog.dialogCount++;
@@ -107,6 +114,9 @@ namespace B {
             this.title.innerHTML = html;
             return this;
         }
+        setBottomMessage(html:string="") {
+            this.bottomMessageBox.innerHTML = html;
+        }
         setCallback(callback:CallableFunction):B.Dialog {
             this.callback = callback;
             return this;
@@ -128,7 +138,6 @@ namespace B {
                 let dlg = B.Dialog.get();
                 if (dlg.noclose) return;
                 if (event.key == "Escape") popDialog();
-                if (event.ctrlKey && event.key == "w") popDialog();
             };
             this.domObj.style.zIndex = (z+1).toString();
             let rect = this.domObj.getBoundingClientRect();
@@ -240,6 +249,7 @@ namespace B {
             }
             let dlg = B.Dialog.get("B_SAY_DIALOG");
             dlg.domObj.style.backgroundColor = "";
+            dlg.setBottomMessage("");
             return dlg;
         
         }
@@ -310,9 +320,12 @@ function freeze(msg:string, title:string="System Message") {
     dlg.setSize(200, 400, true);
     dlg.open().center();
     dlg.setNoClose();
+    dlg.setBottomMessage("<div id='B_FREEZE_TIMER'></div>");
+    B.Timer.add("B_FREEZE_TIMER", "B_FREEZE_TIMER", "SPIN");
     return dlg;
 }
 function thaw() {
+    B.Timer.timers["B_FREEZE_TIMER"].delete();
     popDialog();
 }
 function say(msg:string, title:string="System Message", onclose:CallableFunction=function() {}, bgcolor:string="") {
