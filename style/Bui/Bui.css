@@ -44,9 +44,7 @@
   border: 1px solid #c2bebe;
 }
 
-.tog {
-  /* CHECKBOX OVERWRITE STYLES */
-}
+
 
 .tog > i {
   display: inline-block;
