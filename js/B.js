@@ -281,7 +281,9 @@ var B;
     B.Timer = Timer;
 })(B || (B = {}));
 console.log(B.version);
+/// <reference path="B.ts" />
 var B;
+/// <reference path="B.ts" />
 (function (B) {
     var Dialog = /** @class */ (function () {
         function Dialog(id, callback) {
@@ -478,7 +480,7 @@ var B;
             this.buttonbox.innerHTML = "";
             this.buttonList = [];
             for (var i = 0; i < btns.length; i++) {
-                this.addButton(btns[i]);
+                this.addSayButton(btns[i]);
             }
             return this;
         };
@@ -487,7 +489,20 @@ var B;
             this.noclose = value;
             this.closerButton.style.display = value ? "none" : "";
         };
-        Dialog.prototype.addButton = function (text, returnValue) {
+        Dialog.prototype.addButton = function (text, callback) {
+            var btn = document.createElement("button");
+            btn.setAttribute("data", this.id);
+            btn.className = "BDialogButton";
+            btn.tabIndex = 100 + this.buttonList.length;
+            btn.onclick = function () {
+                callback.call(this);
+            };
+            btn.innerHTML = text;
+            this.buttonbox.appendChild(btn);
+            this.buttonList.push(btn);
+            return btn;
+        };
+        Dialog.prototype.addSayButton = function (text, returnValue) {
             if (returnValue === void 0) { returnValue = ""; }
             if (returnValue == "") {
                 var parts = text.split("=");
@@ -726,7 +741,7 @@ function choose(msg, title, buttons, callback, bgcolor) {
     dlg.setCallback(callback);
     var list = buttons.split("|");
     for (var i = 0; i < list.length; i++) {
-        dlg.addButton(list[i]);
+        dlg.addSayButton(list[i]);
     }
     dlg.domObj.style.backgroundColor = bgcolor;
     dlg.setSize(200, 400, true);
@@ -761,7 +776,9 @@ function askE(msg, title, callback) {
     if (title === void 0) { title = "System Message"; }
     return choose(msg, title, "Yes=YES|No=NO", callback, "lightpink");
 }
+/// <reference path="B.ts" />
 var B;
+/// <reference path="B.ts" />
 (function (B) {
     function makeForm(id, allowSubmit) {
         if (allowSubmit === void 0) { allowSubmit = false; }
@@ -783,6 +800,7 @@ var B;
             if (forceMake === void 0) { forceMake = false; }
             this.id = "";
             this.form = null;
+            this.pairedTableId = "";
             if (!forceMake) {
                 if (Form.cache[id] != null) {
                     return Form.cache[id];
@@ -868,13 +886,151 @@ var B;
                 }
             }
         };
+        Form.prototype.reset = function () {
+            this.form.reset();
+        };
         Form.cache = {};
         return Form;
     }());
     B.Form = Form;
 })(B || (B = {}));
 console.log("Form " + B.version);
+/// <reference path="B.ts" />
 var B;
+/// <reference path="B.ts" />
+(function (B) {
+    var RemoteMethod = /** @class */ (function () {
+        function RemoteMethod(className, methodName, onBefore, onAfter, url) {
+            this.className = "";
+            this.methodName = "";
+            this.onBefore = null;
+            this.onAfter = null;
+            this.url = "";
+            this.runCount = 0;
+            this.error = "";
+            this.running = false;
+            this.aborted = false;
+            this.timings = { start: null, end: null, remotemillis: 0, overheadmillis: 0, totalmillis: 0 };
+            this.params = {};
+            this.results = {};
+            this.xhr = new XMLHttpRequest();
+            this.listPosition = -1;
+            this.className = className;
+            this.methodName = methodName;
+            this.onBefore = onBefore;
+            this.onAfter = onAfter;
+            if (url == undefined)
+                url = RemoteMethod.defaultURL;
+            this.url = url;
+            this.xhr.onreadystatechange = function (event) {
+                var _this = this;
+                console.log("XHR state=" +
+                    this.readyState +
+                    ", Status " +
+                    this.status + " '" +
+                    this.statusText + "'");
+                if (this.readyState == 4) {
+                    var matchArray = B.RemoteMethod.remoteMethods.filter(function (itm) {
+                        return (_this == itm.xhr);
+                    });
+                    var remoteMethod = matchArray[0].remoteMethod;
+                    if (this.status == 200) {
+                        // parts of result are seperated by formfeeds
+                        var parts = this.responseText.split("\f");
+                        // part 0 is the error message (if any)
+                        // part 1+ are result names and values. 
+                        // Name and values are seperated by backspace characters
+                        remoteMethod.error = parts[0].split("\b")[1]; //ERROR\bText of error\f
+                        for (var i = 1; i < parts.length; i++) {
+                            var itm = parts[i].split("\b"); // ITEMNAME\bItem value\f
+                            var key = itm[0];
+                            var val = itm[1];
+                            if (val.charCodeAt(val.length - 1)) { //Ends with null?
+                                val = val.substr(0, val.length - 1);
+                            }
+                            remoteMethod.results[key] = val;
+                        }
+                        remoteMethod.onAfter(remoteMethod.error == "", remoteMethod);
+                    }
+                    else {
+                        remoteMethod.error = "Error status code: " + this.status + " '" + this.statusText;
+                        remoteMethod.onAfter(false, remoteMethod);
+                    }
+                }
+            };
+            B.RemoteMethod.remoteMethods.push({ "xhr": this.xhr, remoteMethod: this });
+        }
+        RemoteMethod.prototype.setParameter = function () {
+            if (arguments.length == 1) { // Pass in a collection?
+                var args = arguments[0];
+                for (var itm in args) {
+                    var key = itm.trim().toUpperCase();
+                    this.params[key] = args[itm];
+                }
+            }
+            for (var i = 0; i < arguments.length; i += 2) {
+                var key = arguments[i].trim().toUpperCase();
+                this.params[key.toUpperCase()] = arguments[i + 1];
+            }
+            return this;
+        };
+        RemoteMethod.prototype.getResult = function (key) {
+            return this.results[key.toUpperCase()];
+        };
+        RemoteMethod.prototype.run = function () {
+            this.setParameter.apply(null, arguments);
+            this.aborted = false;
+            this.timings.start = new Date();
+            this.timings.end = null;
+            this.timings.remotemillis = 0;
+            this.timings.overheadmillis = 0;
+            this.timings.totalmillis = 0;
+            var ok = this.onBefore(this);
+            if (ok == undefined)
+                ok = true;
+            if (!ok)
+                return;
+            var d = "callClass=" + this.className;
+            d += "&callMethod=" + this.methodName;
+            d += "&RPCCallType=" + "CALLBUNDLE";
+            d += "&RemoteMethodItem=" + this.listPosition;
+            d += "&RPCCallNumber=" + this.runCount++;
+            for (var key in this.params) {
+                d += "&key=" + encodeURI(this.params[key]);
+            }
+            this.error = "";
+            this.results = {};
+            this.running = true;
+            if (this.className == null) {
+                if (this.methodName != null) {
+                    // Check if you sent in a millisecond counter for test purposes
+                    if (!isNaN(parseInt(this.methodName, 10))) {
+                        // Simulate taking some time to do the remote method
+                        window.setTimeout(function () {
+                            this.onAfter.call(null, true, this);
+                        }, parseInt(this.methodName, 10));
+                        return;
+                    }
+                }
+                else {
+                    this.onAfter(true, this);
+                    return;
+                }
+            }
+            //this.xhr.onreadystatechange = this.stateHandler;
+            this.xhr.open("POST", this.url, true);
+            this.xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            this.xhr.send(d);
+        };
+        RemoteMethod.remoteMethods = [];
+        RemoteMethod.defaultURL = "/test/RemoteMethod";
+        return RemoteMethod;
+    }());
+    B.RemoteMethod = RemoteMethod;
+})(B || (B = {}));
+/// <reference path="B.ts" />
+var B;
+/// <reference path="B.ts" />
 (function (B) {
     var Dataset = /** @class */ (function () {
         function Dataset(colsList) {
@@ -934,11 +1090,12 @@ var B;
             this.thead = null;
             this.tbody = null;
             this.tfoot = null;
+            this.pairedFormId = null;
+            this.onFormFill = null;
+            this.onFormSave = null;
             this.columns = {};
             this.columnList = [];
             this.anyHeaders = false;
-            if (Table.cache == null)
-                Table.cache = [];
             this.table = document.getElementById(tbl);
             this.container = document.createElement("div");
             this.container.style.cssText = "display:inline-block; margin:0; border:0; padding:0; position:relative;";
@@ -947,6 +1104,12 @@ var B;
             this.container.appendChild(this.table);
             // Add a container around it to be scrolled (if necessary)
             this.tableContainer = document.createElement("div");
+            this.tableContainer.setAttribute("data-BTABLE", id);
+            this.tableContainer.onclick = function (event) {
+                var tblId = event.target.getAttribute("data-BTABLE");
+                var btbl = B.Table.cache[tblId];
+                btbl.unpick();
+            };
             this.tableContainer.style.cssText = "overflow-y:overlay; overflow-x:hidden; " +
                 "overflow-style:-ms-autohiding-scrollbar; " +
                 "display:inline-block; " +
@@ -1009,7 +1172,7 @@ var B;
                 });
                 this.thead.appendChild(tr_1);
             }
-            this.table.setAttribute("data-BTABLE", Table.cache.length);
+            this.table.setAttribute("data-BTABLE", this.id);
             if ("IntersectionObserver" in window) {
                 this.rowWatcher = new IntersectionObserver(function (entries, observer) {
                     for (var i = 0; i < entries.length; i++) {
@@ -1017,49 +1180,23 @@ var B;
                         if (entry.isIntersecting) {
                             var tr_2 = entry.target;
                             var table_1 = B.util.parentNode(tr_2, "table");
-                            var cacheNumber = table_1.getAttribute("data-BTABLE");
-                            var btbl = Table.cache[cacheNumber];
+                            var id_1 = table_1.getAttribute("data-BTABLE");
+                            var btbl = Table.cache[id_1];
                             btbl.renderRow(tr_2.rowIndex - 1);
                             btbl.rowWatcher.unobserve(tr_2);
                         }
                     }
                 }, { root: this.table });
             }
-            Table.cache.push(this);
+            Table.cache[this.id] = this;
             this.table.onclick = function (event) {
+                event.stopPropagation();
                 var td = event.target;
                 var tr = B.util.parentNode(td, "tr");
                 var table = B.util.parentNode(tr, "table");
                 var cacheNumber = table.getAttribute("data-BTABLE");
                 var btbl = Table.cache[cacheNumber];
-                var rn = tr.rowIndex;
-                if (btbl.anyHeaders)
-                    rn--;
-                var rd = btbl.dataset.rows[rn];
-                var curtr = btbl.getTableRow();
-                var changed = false;
-                if (curtr == null) {
-                    changed = true;
-                }
-                else if (curtr != tr) {
-                    changed = true;
-                    if (curtr.className == "pickedRow") {
-                        curtr.className = "";
-                    }
-                }
-                if (tr.className != "pickedRow")
-                    tr.className = "pickedRow";
-                btbl.pickedRow = rd;
-                // Handle tracked footer buttons
-                for (var key in btbl.footer.buttons) {
-                    var btn = btbl.footer.buttons[key];
-                    if (btn.track && !btn.enabled)
-                        btn.enable();
-                }
-                // Do user click action (if any)
-                var cells = btbl.makeCellsCollection(tr);
-                if (btbl.onclick != null)
-                    btbl.onclick.call(btbl, td, tr, rd, cells, changed);
+                btbl.pickRow(tr.rowIndex, td);
             };
             this.table.ondblclick = function (event) {
                 // In order to be double-clicked, it must have been clicked
@@ -1075,7 +1212,7 @@ var B;
                 var rd = btbl.dataset.rows[rn];
                 var currd = btbl.getDataRow();
                 var curtr = btbl.getTableRow();
-                btbl.pickedRow = rd;
+                btbl.pickedRow = rn;
                 var cells = btbl.makeCellsCollection(tr);
                 if (btbl.ondblclick != null)
                     btbl.ondblclick.call(btbl, td, tr, rd, cells);
@@ -1151,7 +1288,7 @@ var B;
                             if (tblRow != undefined) {
                                 cells = btbl.makeCellsCollection(btbl.getTableRow());
                             }
-                            btn.onclick.call(btn, btbl.pickedRow, cells);
+                            btn.onclick.call(btbl, btn, btbl.dataset.rows[btbl.pickedRow], cells);
                         }
                     };
                     obj.div = btn;
@@ -1160,7 +1297,7 @@ var B;
                     if (this.buttonList.length > 0)
                         btn.style.marginLeft = ".25em";
                     this.buttonList.push(id);
-                    if (track && this.tableObject.dataset.pickedRow == null) {
+                    if (track && this.tableObject.pickedRow == null) {
                         obj.disable();
                     }
                     else {
@@ -1183,24 +1320,234 @@ var B;
             this.tableContainer.style.height = height;
             this.tableContainer.style.overflowY = "scroll";
         };
+        Table.prototype.pickRow = function (rownum, td) {
+            var tr = this.table.rows[rownum];
+            if (this.anyHeaders)
+                rownum--;
+            var rd = this.getDataRow(rownum);
+            var curtr = this.getTableRow();
+            var changed = false;
+            if (curtr == null) {
+                changed = true;
+            }
+            else if (curtr != tr) {
+                changed = true;
+                if (curtr.className == "pickedRow") {
+                    curtr.className = "";
+                }
+            }
+            if (tr.className != "pickedRow")
+                tr.className = "pickedRow";
+            this.pickedRow = rownum;
+            // Handle tracked footer buttons
+            for (var key in this.footer.buttons) {
+                var btn = this.footer.buttons[key];
+                if (btn.track && !btn.enabled)
+                    btn.enable();
+            }
+            // Do user click action (if any)
+            var cells = this.makeCellsCollection(tr);
+            if (td == undefined)
+                td = tr.cells[0];
+            if (this.onclick != null)
+                this.onclick.call(this, td, tr, rd, cells, changed);
+        };
+        Table.prototype.unpick = function () {
+            var curtr = this.getTableRow();
+            if (curtr == null)
+                return;
+            curtr.className = "";
+            this.pickedRow = null;
+            // Handle tracked footer buttons
+            for (var key in this.footer.buttons) {
+                var btn = this.footer.buttons[key];
+                if (btn.track && btn.enabled)
+                    btn.disable();
+            }
+        };
+        Table.prototype.pairWithForm = function (formId, supportedActions, onFormFill, onFormSave) {
+            if (supportedActions === void 0) { supportedActions = "AECD"; }
+            if (onFormFill === void 0) { onFormFill = null; }
+            if (onFormSave === void 0) { onFormSave = null; }
+            this.pairedFormId = formId;
+            this.onFormFill = onFormFill;
+            this.onFormSave = onFormSave;
+            if (supportedActions.indexOf("A") >= 0) {
+                this.footer.addButton("formAdd", "Add", function () {
+                    this.formAdd();
+                });
+            }
+            if (supportedActions.indexOf("E") >= 0) {
+                this.footer.addButton("formEdit", "Edit", function () {
+                    this.formEdit();
+                }, true).disable();
+                this.ondblclick = function () {
+                    this.formEdit();
+                };
+            }
+            if (supportedActions.indexOf("C") >= 0) {
+                this.footer.addButton("formCopy", "Copy", function () {
+                    this.formCopy();
+                }, true).disable();
+            }
+            if (supportedActions.indexOf("D") >= 0) {
+                var btn = this.footer.addButton("formDelete", "Delete", function () {
+                    this.formDelete();
+                }, true);
+                btn.disable();
+                btn.className = "warning";
+            }
+            return this;
+        };
+        Table.prototype.getForm = function () { return B.getForm(this.pairedFormId); };
+        Table.prototype.formAdd = function () {
+            if (this.pairedFormId == null)
+                return;
+            var dlg = B.Dialog.get(this.pairedFormId);
+            var frm = this.getForm();
+            if (frm == null)
+                return;
+            frm.pairedTableId = this.id;
+            frm.reset();
+            var okToOpen = true;
+            if (this.onFormFill != null) {
+                okToOpen = this.onFormFill(frm);
+                if (okToOpen == undefined)
+                    okToOpen = true;
+            }
+            if (okToOpen) {
+                dlg.setButtons();
+                dlg.addButton("Save new " + this.rowCountTitle, function () {
+                    var frm = B.Form.cache[this.getAttribute("data")];
+                    var btbl = B.Table.cache[frm.pairedTableId];
+                    btbl.saveNewRow(frm);
+                });
+                dlg.addButton("Cancel", popDialog);
+                dlg.open();
+            }
+        };
+        Table.prototype.saveNewRow = function (frm) {
+            var chk = frm.get();
+            var params = [];
+            for (var i = 0; i < this.dataset.columns.length; i++) {
+                var cname = this.dataset.columns[i];
+                params.push(chk[cname]);
+            }
+            this.addRow.apply(this, params);
+            this.pickRow(this.table.rows.length - 1);
+            popDialog();
+        };
+        Table.prototype.formEdit = function () {
+            if (this.pairedFormId == null)
+                return;
+            var dlg = B.Dialog.get(this.pairedFormId);
+            var rd = this.getDataRow();
+            if (rd == null)
+                return;
+            var frm = this.getForm();
+            if (frm == null)
+                return;
+            frm.pairedTableId = this.id;
+            frm.reset();
+            for (var cname in this.dataset.columnNames) {
+                frm.set(cname, rd[cname]);
+            }
+            var okToOpen = true;
+            if (this.onFormFill != null) {
+                okToOpen = this.onFormFill(frm);
+                if (okToOpen == undefined)
+                    okToOpen = true;
+            }
+            if (okToOpen) {
+                dlg.setButtons();
+                dlg.addButton("Save " + this.rowCountTitle + "  changes", function () {
+                    var frm = B.Form.cache[this.getAttribute("data")];
+                    var btbl = B.Table.cache[frm.pairedTableId];
+                    btbl.saveRowChanges(frm);
+                });
+                dlg.addButton("Cancel", popDialog);
+                dlg.open();
+            }
+        };
+        Table.prototype.saveRowChanges = function (frm) {
+            var rd = this.getDataRow();
+            if (rd == null)
+                return;
+            var chk = frm.get();
+            for (var cname in this.dataset.columnNames) {
+                rd[cname] = chk[cname];
+            }
+            this.renderRow(this.pickedRow);
+            popDialog();
+        };
+        Table.prototype.formCopy = function () {
+            if (this.pairedFormId == null)
+                return;
+            var dlg = B.Dialog.get(this.pairedFormId);
+            var rd = this.getDataRow();
+            if (rd == null)
+                return;
+            var frm = this.getForm();
+            if (frm == null)
+                return;
+            frm.pairedTableId = this.id;
+            frm.reset();
+            for (var cname in this.dataset.columnNames) {
+                frm.set(cname, rd[cname]);
+            }
+            var okToOpen = true;
+            if (this.onFormFill != null) {
+                okToOpen = this.onFormFill(frm);
+                if (okToOpen == undefined)
+                    okToOpen = true;
+            }
+            if (okToOpen) {
+                dlg.setButtons();
+                dlg.addButton("Save " + this.rowCountTitle + "  copy", function () {
+                    var frm = B.Form.cache[this.getAttribute("data")];
+                    var btbl = B.Table.cache[frm.pairedTableId];
+                    btbl.saveNewRow(frm);
+                });
+                dlg.addButton("Cancel", popDialog);
+                dlg.open();
+            }
+        };
+        Table.prototype.formDelete = function () {
+            var msg = "Are you sure you want to delete the selected " + this.rowCountTitle + "?";
+            var btbl = this;
+            chooseW(msg, "Delete " + this.rowCountTitle, "Yes - Delete=YES|Cancel", function (rslt) {
+                if (rslt == "YES")
+                    btbl.saveRowDelete();
+            });
+        };
+        Table.prototype.saveRowDelete = function () {
+            var rd = this.getDataRow();
+            if (rd == null)
+                return;
+            var tr = this.getTableRow();
+            this.dataset.rows.splice(tr.rowIndex - 1, 1);
+            this.table.deleteRow(tr.rowIndex);
+            this.unpick();
+            popDialog();
+        };
         Table.prototype.getDataRow = function (rownum) {
             if (rownum == undefined) {
                 if (this.pickedRow != null)
-                    rownum = this.pickedRow.ROWNUM;
+                    rownum = this.pickedRow;
             }
             return (rownum == null ? null : this.dataset.rows[rownum]);
         };
         Table.prototype.getTableRow = function (rownum) {
             if (rownum == undefined) {
                 if (this.pickedRow != null)
-                    rownum = this.pickedRow.ROWNUM;
+                    rownum = this.pickedRow;
             }
             return (rownum == null ? null : this.tbody.rows[rownum]);
         };
         Table.prototype.getTableRowCells = function (rownum) {
             if (rownum == undefined) {
                 if (this.pickedRow != null)
-                    rownum = this.pickedRow.ROWNUM;
+                    rownum = this.pickedRow;
             }
             return (rownum == null ? null : this.tbody.rows[rownum]);
         };
@@ -1211,7 +1558,7 @@ var B;
             }
         };
         Table.prototype.addRow = function (argumentList) {
-            var rowData = { ROWNUM: -1 };
+            var rowData = {};
             var args = arguments;
             if (arguments.length == 1 && arguments[0].constructor === Array)
                 args = arguments[0];
@@ -1226,7 +1573,6 @@ var B;
                     rowData[colname] = args[argnum];
                 }
             }
-            rowData.ROWNUM = this.dataset.rows.length;
             this.dataset.rows.push(rowData);
             var tr = this.preloadRowToTable(this.dataset.rows.length - 1);
             if ("IntersectionObserver" in window) {
@@ -1284,7 +1630,7 @@ var B;
         Table.prototype.renderRow = function (rownum) {
             if (rownum == undefined) {
                 if (this.pickedRow != null)
-                    rownum = this.pickedRow.ROWNUM;
+                    rownum = this.pickedRow;
             }
             var tr = this.table.rows[rownum + 1];
             tr.innerHTML = ""; // Empty it of cells;
@@ -1329,7 +1675,7 @@ var B;
                 cells[column.id] = el;
             }
             tr.cells[tr.cells.length - 1].style.paddingRight = "20px"; // Make room for scrollbar??
-            this.preRowRender(this.table.rows.length, tr, cells, this.dataset.rows[rownum]);
+            this.preRowRender(tr.rowIndex, tr, cells, this.dataset.rows[rownum]);
             return tr;
         };
         Table.prototype.freeze = function (text, withTimer) {
@@ -1350,7 +1696,7 @@ var B;
             B.util.killElement(this.freezeTextElement, this.freezeCover);
             this.container.style.opacity = 1;
         };
-        Table.cache = null;
+        Table.cache = {};
         return Table;
     }());
     B.Table = Table;

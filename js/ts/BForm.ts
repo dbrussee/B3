@@ -1,3 +1,4 @@
+/// <reference path="B.ts" />
 namespace B {
     export function makeForm(id:string, allowSubmit:boolean=false) {
         return new Form(id, allowSubmit, true);
@@ -13,6 +14,7 @@ namespace B {
         private id:string = "";
         private form = null;
         public static cache = {};
+        public pairedTableId = "";
         constructor(id:string, allowSubmit:boolean = false, forceMake:boolean=false) {
             if (!forceMake) {
                 if (Form.cache[id] != null) {
@@ -88,6 +90,9 @@ namespace B {
                     el.value = val;
                 }
             }
+        }
+        reset() {
+            this.form.reset();
         }
     }
 }

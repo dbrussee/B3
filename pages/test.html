@@ -11,47 +11,17 @@
     <script>
     function init() {
         window.tblA = new B.Table("tblA", "tblA", "col1,col2,col3", "row","rows");
-        tblA.onclick = function(td, tr, rd, cells, changed) {
-            showMessage("Clicked row " + tr.rowIndex);
+        tblA.preRowRender = function(rownum,tr,cells,rd) {
+            cells.col1.innerHTML = rownum + ". " + rd.col1;
         }
-        tblA.ondblclick = function(td, tr, rd, cells) {
-            showMessage("You double-clicked on the row number " + tr.rowIndex);
-            openDialog("dlgB");
-        }
+        tblA.pairWithForm("tblAForm");
         tblA.setTableHeight("200px");
-        tblA.footer.addButton("add", "Dialogs", function() { openDialog('dlgA'); });
-        tblA.footer.addButton("b1", "My Button", function() {
-            showMessage("You clicked My Button");
-            openDialog('dlgB');
-        }, true).disable();
-        tblA.addRow("1. First Column", "Second", "Third");
-        tblA.addRow("2. First Column", "Second", "Third");
-        tblA.addRow("3. First Column", "Second", "Third");
-        tblA.addRow("4. First Column", "Second", "Third");
-        tblA.addRow("5. First Column", "Second", "Third");
-        tblA.addRow("6. First Column", "Second", "Third");
-        tblA.addRow("7. First Column", "Second", "Third");
-        tblA.addRow("8. First Column", "Second", "Third");
-        tblA.addRow("9. First Column", "Second", "Third");
-        tblA.addRow("10. First Column", "Second", "Third");
-
+        tblA.addRow("Row 1, Column 1", "R1:C2", "R1:C3");
+        tblA.addRow("Row 2, Column 1", "R2:C2", "R2:C3");
         setTestButton();
     }
     function test() {
-        var frm = new B.getForm("frmA");
-        var chk = frm.get();
-        var msg = "Hello, " + chk.fname + ". ";
-        msg += "You have" + (chk.agree ? " read " : " NOT read ");
-        msg += "the agreement.";
-        //alert(msg);
-        frm.set("lname", "Brussee the great");
-        var didIChange = B.util.compare(chk, frm.get());
-        if (didIChange) {
-            showMessage("Content did not change");
-        } else {
-            showMessage("Content changed");
-        }
-        openDialog("frmTest");
+        location.href="form_features.html";
     }
     function setTestButton() {
         var isSet = B.getForm("frmA").get().agree;
@@ -123,14 +93,12 @@
             </table>
             
         </form>
-        <br>
-        <div style='width: 100%' id='masterTime'></div>
-        <div id='textTime'></div>
+        <button onclick='openDialog("dlgA");'>Test Dialogs</button>
         <br><br>
         <table id='tblA'>
             <tr><th data='col1,200'>Column 1</th>
-                <th data='col2,80'>Col 2</th>
-                <th data='col2,180'>Col 3</th></tr>
+                <th data='col2,150'>Col 2</th>
+                <th data='col3,180'>Col 3</th></tr>
 
         </table>
         <div id='locInfo'></div>
@@ -279,6 +247,14 @@
             </tr>
         </table>
         <button class='BDialogButton' onclick='popDialog()'>Close this test dialog</button>
+    </form>
+    <form class='BDialog' id='tblAForm' style='height: 400px; width: 600px;' title='Main Table Data Form'>
+        <table class='form'>
+            <tr><th>Column 1:</th><td><input class='required' name='col1'></td></tr>
+            <tr><th>Column 2:</th><td><input name='col2'></td></tr>
+            <tr><th>Column 3:</th><td><input name='col3'></td></tr>
+
+        </table>
     </form>
 </body>
 </html>

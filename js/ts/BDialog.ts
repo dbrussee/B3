@@ -1,3 +1,4 @@
+/// <reference path="B.ts" />
 namespace B {
 
     export class Dialog {
@@ -190,7 +191,7 @@ namespace B {
             this.buttonbox.innerHTML = "";
             this.buttonList = [];
             for (let i = 0; i < btns.length; i++) {
-                this.addButton(btns[i]);
+                this.addSayButton(btns[i]);
             }
             return this;
         }
@@ -198,7 +199,20 @@ namespace B {
             this.noclose = value;
             this.closerButton.style.display = value ? "none" : "";
         }
-        addButton(text:string, returnValue:string=""):B.Dialog {
+        addButton(text:string, callback:Function) {
+            let btn = document.createElement("button");
+            btn.setAttribute("data", this.id);
+            btn.className = "BDialogButton";
+            btn.tabIndex = 100 + this.buttonList.length;
+            btn.onclick = function() { 
+                callback.call(this) 
+            };
+            btn.innerHTML = text;
+            this.buttonbox.appendChild(btn);
+            this.buttonList.push(btn);
+            return btn;
+        }
+        addSayButton(text:string, returnValue:string=""):B.Dialog {
             if (returnValue == "") {
                 let parts = text.split("=");
                 if (parts.length == 1) {
@@ -400,7 +414,7 @@ function choose(msg:string, title:string="System Message", buttons:string, callb
     dlg.setCallback(callback);
     let list = buttons.split("|");
     for (let i = 0; i < list.length; i++) {
-        dlg.addButton(list[i]);
+        dlg.addSayButton(list[i]);
     }
     dlg.domObj.style.backgroundColor = bgcolor;
     dlg.setSize(200, 400, true);

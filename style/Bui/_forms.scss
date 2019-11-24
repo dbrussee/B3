@@ -127,6 +127,9 @@ input[type="reset"],
             border: 1px solid dimgray;
         }
     }
+    &.warning {
+        background-image: $buttonGradientWarning;
+    }
 }
 table.data {
     border-collapse: collapse;

@@ -1,3 +1,4 @@
+/// <reference path="B.ts" />
 namespace B {
     export class Dataset {
         public columnNames = {};
@@ -30,7 +31,7 @@ namespace B {
 
     export class Table {
         public id:string = "";
-        static cache = null;
+        static cache = {};
         private container = null;
         private table = null;
         private tableContainer = null;
@@ -45,10 +46,13 @@ namespace B {
         public rowCountTitle2 = "";
         private rowWatcher = null;
         public dataset = null;
-        public pickedRow = null;
+        public pickedRow:number = null;
         private thead = null;
         private tbody = null;
         private tfoot = null;
+        private pairedFormId:string = null;
+        private onFormFill:Function = null;
+        private onFormSave:Function = null;
     
         public columns = {};
         public columnList = [];
@@ -62,7 +66,6 @@ namespace B {
             this.tableContainer.style.overflowY = "scroll";
         }
         constructor(tbl:string, id:string, datasetCodes:string, title:string="") {
-            if (Table.cache == null) Table.cache = [];
             this.table = document.getElementById(tbl);
             this.container = document.createElement("div");
             this.container.style.cssText = "display:inline-block; margin:0; border:0; padding:0; position:relative;";
@@ -71,6 +74,12 @@ namespace B {
             this.container.appendChild(this.table);
             // Add a container around it to be scrolled (if necessary)
             this.tableContainer = document.createElement("div");
+            this.tableContainer.setAttribute("data-BTABLE", id);
+            this.tableContainer.onclick = function(event) {
+                let tblId = event.target.getAttribute("data-BTABLE");
+                let btbl = B.Table.cache[tblId];
+                btbl.unpick();
+            }
             this.tableContainer.style.cssText = "overflow-y:overlay; overflow-x:hidden; " +
                 "overflow-style:-ms-autohiding-scrollbar; " +
                 "display:inline-block; " +
@@ -132,7 +141,7 @@ namespace B {
                 })
                 this.thead.appendChild(tr);
             }        
-            this.table.setAttribute("data-BTABLE", Table.cache.length);
+            this.table.setAttribute("data-BTABLE", this.id);
             if ("IntersectionObserver" in window) {
                     this.rowWatcher = new IntersectionObserver(function(entries, observer) {
                     for (let i = 0; i < entries.length; i++) {
@@ -140,45 +149,24 @@ namespace B {
                         if (entry.isIntersecting) {
                             let tr = entry.target as HTMLTableRowElement;
                             let table = util.parentNode(tr, "table");
-                            let cacheNumber = table.getAttribute("data-BTABLE");
-                            let btbl = Table.cache[cacheNumber];
+                            let id = table.getAttribute("data-BTABLE");
+                            let btbl = Table.cache[id];
                             btbl.renderRow(tr.rowIndex-1);
                             btbl.rowWatcher.unobserve(tr);
                         }
                     }
                 }, {root:this.table});
             }
-            Table.cache.push(this);
+            Table.cache[this.id] = this;
 
             this.table.onclick = function(event) {
+                event.stopPropagation();
                 let td = event.target;
                 let tr = util.parentNode(td, "tr");
                 let table = util.parentNode(tr, "table");
                 let cacheNumber = table.getAttribute("data-BTABLE");
                 let btbl = Table.cache[cacheNumber];
-                let rn = tr.rowIndex;
-                if (btbl.anyHeaders) rn--;
-                let rd = btbl.dataset.rows[rn]; 
-                let curtr = btbl.getTableRow();
-                let changed = false;
-                if (curtr == null) {
-                    changed = true;
-                } else if (curtr != tr) {
-                    changed = true;
-                    if (curtr.className == "pickedRow") {
-                        curtr.className = "";
-                    }
-                }
-                if (tr.className != "pickedRow") tr.className = "pickedRow";
-                btbl.pickedRow = rd;
-                // Handle tracked footer buttons
-                for (let key in btbl.footer.buttons) {
-                    let btn = btbl.footer.buttons[key];
-                    if (btn.track && !btn.enabled) btn.enable();
-                }
-                // Do user click action (if any)
-                let cells = btbl.makeCellsCollection(tr);
-                if (btbl.onclick != null) btbl.onclick.call(btbl, td, tr, rd, cells, changed);
+                btbl.pickRow(tr.rowIndex, td);
             }
             this.table.ondblclick = function(event) {
                 // In order to be double-clicked, it must have been clicked
@@ -193,7 +181,7 @@ namespace B {
                 let rd = btbl.dataset.rows[rn]; 
                 let currd = btbl.getDataRow();
                 let curtr = btbl.getTableRow();
-                btbl.pickedRow = rd;
+                btbl.pickedRow = rn;
                 let cells = btbl.makeCellsCollection(tr);
                 if (btbl.ondblclick != null) btbl.ondblclick.call(btbl, td, tr, rd, cells);
             }
@@ -268,7 +256,7 @@ namespace B {
                             if (tblRow != undefined) {
                                 cells = btbl.makeCellsCollection(btbl.getTableRow());
                             }
-                            btn.onclick.call(btn, btbl.pickedRow, cells);
+                            btn.onclick.call(btbl, btn, btbl.dataset.rows[btbl.pickedRow], cells);
                         }
                     }
                     obj.div = btn;
@@ -276,7 +264,7 @@ namespace B {
                     this.buttons[id] = obj;
                     if (this.buttonList.length > 0) btn.style.marginLeft = ".25em";
                     this.buttonList.push(id);
-                    if (track && this.tableObject.dataset.pickedRow == null) {
+                    if (track && this.tableObject.pickedRow == null) {
                         obj.disable();
                     } else {
                         obj.enable();
@@ -292,21 +280,208 @@ namespace B {
             this.dataset = new Dataset(datasetCodes);                
         }
 
-        getDataRow(rownum:number) {
+        pickRow(rownum:number, td?:HTMLTableCellElement) {
+            let tr = this.table.rows[rownum];
+            if (this.anyHeaders) rownum--;
+            let rd = this.getDataRow(rownum);
+            let curtr = this.getTableRow();
+            let changed = false;
+            if (curtr == null) {
+                changed = true;
+            } else if (curtr != tr) {
+                changed = true;
+                if (curtr.className == "pickedRow") {
+                    curtr.className = "";
+                }
+            }
+            if (tr.className != "pickedRow") tr.className = "pickedRow";
+            this.pickedRow = rownum;
+            // Handle tracked footer buttons
+            for (let key in this.footer.buttons) {
+                let btn = this.footer.buttons[key];
+                if (btn.track && !btn.enabled) btn.enable();
+            }
+            // Do user click action (if any)
+            let cells = this.makeCellsCollection(tr);
+            if (td == undefined) td = tr.cells[0];
+            if (this.onclick != null) this.onclick.call(this, td, tr, rd, cells, changed);
+        }
+
+        unpick() {
+            let curtr = this.getTableRow();
+            if (curtr == null) return;
+            curtr.className = "";
+            this.pickedRow = null;
+            // Handle tracked footer buttons
+            for (let key in this.footer.buttons) {
+                let btn = this.footer.buttons[key];
+                if (btn.track && btn.enabled) btn.disable();
+            }
+
+        }
+
+        pairWithForm(formId:string, supportedActions:string = "AECD", onFormFill:Function = null, onFormSave:Function = null) {
+            this.pairedFormId = formId;
+            this.onFormFill = onFormFill;
+            this.onFormSave = onFormSave;
+
+            if (supportedActions.indexOf("A") >= 0) {
+                this.footer.addButton("formAdd", "Add", function() {
+                    this.formAdd();
+                })
+            }
+
+            if (supportedActions.indexOf("E") >= 0) {
+                this.footer.addButton("formEdit", "Edit", function() { 
+                    this.formEdit();
+                }, true).disable();
+                this.ondblclick = function() {
+                    this.formEdit();
+                }
+            }
+            if (supportedActions.indexOf("C") >= 0) {
+                this.footer.addButton("formCopy", "Copy", function() { 
+                    this.formCopy();
+                }, true).disable();
+            }
+            if (supportedActions.indexOf("D") >= 0) {
+                let btn = this.footer.addButton("formDelete", "Delete", function() { 
+                    this.formDelete();
+                }, true);
+                btn.disable();
+                btn.className = "warning";
+            }
+            return this;
+        }
+        getForm() { return B.getForm(this.pairedFormId); }
+        formAdd() {
+            if (this.pairedFormId == null) return;
+            let dlg = B.Dialog.get(this.pairedFormId);
+            let frm = this.getForm(); if (frm == null) return;
+            frm.pairedTableId = this.id;
+            frm.reset();
+            let okToOpen = true;
+            if (this.onFormFill != null) {
+                okToOpen = this.onFormFill(frm);
+                if (okToOpen == undefined) okToOpen = true;
+            }
+            if (okToOpen) {
+                dlg.setButtons();
+                dlg.addButton("Save new " + this.rowCountTitle, function() {
+                    let frm = B.Form.cache[this.getAttribute("data")];
+                    let btbl = B.Table.cache[frm.pairedTableId];
+                    btbl.saveNewRow(frm);
+                });
+                dlg.addButton("Cancel", popDialog);
+                dlg.open();
+            }
+        }
+        saveNewRow(frm:B.Form) {
+            let chk = frm.get();
+            let params:string[] = [];
+            for (let i = 0; i < this.dataset.columns.length; i++) {
+                let cname = this.dataset.columns[i];
+                params.push(chk[cname]);
+            }
+            this.addRow.apply(this, params);
+            this.pickRow(this.table.rows.length-1);
+            popDialog();
+
+        }
+        formEdit() {
+            if (this.pairedFormId == null) return;
+            let dlg = B.Dialog.get(this.pairedFormId);
+            let rd = this.getDataRow(); if (rd == null) return;
+            let frm = this.getForm(); if (frm == null) return;
+            frm.pairedTableId = this.id;
+            frm.reset();
+            for (let cname in this.dataset.columnNames) {
+                frm.set(cname, rd[cname]);
+            }
+            let okToOpen = true;
+            if (this.onFormFill != null) {
+                okToOpen = this.onFormFill(frm);
+                if (okToOpen == undefined) okToOpen = true;
+            }
+            if (okToOpen) {
+                dlg.setButtons();
+                dlg.addButton("Save " + this.rowCountTitle + "  changes", function() {
+                    let frm = B.Form.cache[this.getAttribute("data")];
+                    let btbl = B.Table.cache[frm.pairedTableId];
+                    btbl.saveRowChanges(frm);
+                });
+                dlg.addButton("Cancel", popDialog);
+                dlg.open();
+            }
+        }
+        saveRowChanges(frm:B.Form) {
+            let rd = this.getDataRow(); if (rd == null) return;
+            let chk = frm.get();
+            for (let cname in this.dataset.columnNames) {
+                rd[cname] = chk[cname];
+            }       
+            this.renderRow(this.pickedRow);
+            popDialog();
+        }
+        formCopy() {
+            if (this.pairedFormId == null) return;
+            let dlg = B.Dialog.get(this.pairedFormId);
+            let rd = this.getDataRow(); if (rd == null) return;
+            let frm = this.getForm(); if (frm == null) return;
+            frm.pairedTableId = this.id;
+            frm.reset();
+            for (let cname in this.dataset.columnNames) {
+                frm.set(cname, rd[cname]);
+            }
+            let okToOpen = true;
+            if (this.onFormFill != null) {
+                okToOpen = this.onFormFill(frm);
+                if (okToOpen == undefined) okToOpen = true;
+            }
+            if (okToOpen) {
+                dlg.setButtons();
+                dlg.addButton("Save " + this.rowCountTitle + "  copy", function() {
+                    let frm = B.Form.cache[this.getAttribute("data")];
+                    let btbl = B.Table.cache[frm.pairedTableId];
+                    btbl.saveNewRow(frm);
+                });
+                dlg.addButton("Cancel", popDialog);
+                dlg.open();
+            }
+
+        }
+        formDelete() {
+            let msg = "Are you sure you want to delete the selected " + this.rowCountTitle + "?";
+            let btbl = this;
+            chooseW(msg, "Delete " + this.rowCountTitle, "Yes - Delete=YES|Cancel", function(rslt) {
+                if (rslt == "YES") btbl.saveRowDelete();
+            });
+        }
+        saveRowDelete() {
+            let rd = this.getDataRow(); if (rd == null) return;
+            let tr = this.getTableRow();
+            this.dataset.rows.splice(tr.rowIndex-1,1);
+            this.table.deleteRow(tr.rowIndex);
+            this.unpick();
+            popDialog();
+        }
+        
+
+        getDataRow(rownum?:number) {
             if (rownum == undefined) {
-                if (this.pickedRow != null) rownum = this.pickedRow.ROWNUM;
+                if (this.pickedRow != null) rownum = this.pickedRow;
             }
             return (rownum == null ? null : this.dataset.rows[rownum]);        
         }
-        getTableRow(rownum:number) {
+        getTableRow(rownum?:number) {
             if (rownum == undefined) {
-                if (this.pickedRow != null) rownum = this.pickedRow.ROWNUM;
+                if (this.pickedRow != null) rownum = this.pickedRow;
             }
             return (rownum == null ? null : this.tbody.rows[rownum]);
         }
-        getTableRowCells(rownum:number) {
+        getTableRowCells(rownum?:number) {
             if (rownum == undefined) {
-                if (this.pickedRow != null) rownum = this.pickedRow.ROWNUM;
+                if (this.pickedRow != null) rownum = this.pickedRow;
             }
             return (rownum == null ? null : this.tbody.rows[rownum]);
         }
@@ -317,7 +492,7 @@ namespace B {
             }
         }
         addRow(argumentList:any) {
-            let rowData = {ROWNUM:-1};
+            let rowData = {};
             let args = arguments;
             if (arguments.length == 1 && arguments[0].constructor === Array) args = arguments[0];
             for (let argnum = 0; argnum < args.length; argnum++) {
@@ -330,7 +505,6 @@ namespace B {
                     rowData[colname] = args[argnum];
                 }
             }
-            rowData.ROWNUM = this.dataset.rows.length;
             this.dataset.rows.push(rowData);
         
             let tr = this.preloadRowToTable(this.dataset.rows.length-1);
@@ -383,7 +557,7 @@ namespace B {
         }
         renderRow(rownum:number) {
             if (rownum == undefined) {
-                if (this.pickedRow != null) rownum = this.pickedRow.ROWNUM;
+                if (this.pickedRow != null) rownum = this.pickedRow;
             }
             let tr = this.table.rows[rownum+1];
             tr.innerHTML = ""; // Empty it of cells;
@@ -426,7 +600,7 @@ namespace B {
                 cells[column.id] = el;
             }
             tr.cells[tr.cells.length-1].style.paddingRight = "20px"; // Make room for scrollbar??
-            this.preRowRender(this.table.rows.length,tr,cells,this.dataset.rows[rownum]);
+            this.preRowRender(tr.rowIndex,tr,cells,this.dataset.rows[rownum]);
             return tr;
         }
 

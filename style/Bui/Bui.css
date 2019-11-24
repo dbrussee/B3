@@ -457,6 +457,14 @@ input[type="reset"]:disabled:active,
   border: 1px solid dimgray;
 }
 
+button.warning,
+input[type="submit"].warning,
+input[type="reset"].warning,
+.BTableFooterButton.warning {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(ghostwhite), to(lightyellow));
+  background-image: linear-gradient(ghostwhite, lightyellow);
+}
+
 table.data {
   border-collapse: collapse;
 }
