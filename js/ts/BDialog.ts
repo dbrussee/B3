@@ -23,6 +23,7 @@ namespace B {
         public form:Form = null;
         private tallness = 0;
         private wideness = 0;
+        public zIndex = 0;
         constructor(id:string, callback:CallableFunction = function() {}) {
             if (B.Dialog.dialogs[id] != undefined) {
                 return B.Dialog.get(id);
@@ -93,7 +94,9 @@ namespace B {
             B.Dialog.dialogCount++;
             if (B.Dialog.dialogCount == 1) {
                 B.Dialog.overlay = document.createElement("div");
-                
+                B.Dialog.overlay.ondblclick = function() {
+                    B.Dialog.get().center();
+                }
                 document.body.appendChild(B.Dialog.overlay);
                 B.Dialog.overlay.style.cssText = 
                     "position: absolute; " +
@@ -107,12 +110,17 @@ namespace B {
             }
             this.form = new B.Form(id);
         }   
+        getForm() { return this.form; }
         setContent(html:string):B.Dialog {
             this.content.innerHTML = html;
             return this;
         }
         setTitle(html:string):B.Dialog {
             this.title.innerHTML = html;
+            return this;
+        }
+        reset():B.Dialog {
+            this.form.reset();
             return this;
         }
         setBottomMessage(html:string="") {
@@ -125,7 +133,7 @@ namespace B {
         center() {
             let rect = this.domObj.getBoundingClientRect();
             this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
-            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - .5em)";
             return this;
         }
         open(center?:boolean):B.Dialog {
@@ -134,6 +142,7 @@ namespace B {
             this.domObj.style.display = "inline-block";
             let z = (B.Dialog.dialogStack.length * 2) + 10;
             B.Dialog.overlay.style.zIndex = z;
+            this.zIndex = z;
             B.Dialog.overlay.style.display = "block";
             window.onkeydown = function(event:KeyboardEvent) {
                 let dlg = B.Dialog.get();
@@ -149,8 +158,9 @@ namespace B {
             }
             if (center) {
                 // Calculate positioning
-                this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
-                this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+                //this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
+                //this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+                this.center();
             }
             this.isFirstOpen = false;
             this.setNoClose(false);
@@ -335,7 +345,7 @@ function freeze(msg:string, title:string="System Message") {
     dlg.open().center();
     dlg.setNoClose();
     dlg.setBottomMessage("<div id='B_FREEZE_TIMER'></div>");
-    B.Timer.add("B_FREEZE_TIMER", "B_FREEZE_TIMER", "SPIN");
+    let timer = B.Timer.add("B_FREEZE_TIMER", "B_FREEZE_TIMER", "SPIN");
     return dlg;
 }
 function thaw() {
@@ -372,7 +382,7 @@ function sayGet(msg:string, prompt:string, defaultValue:string, title:string="Sy
         h += "<td><textarea" + (allowTabs ? " class='ALLOWTABS'" : "") + " tabIndex=1 name='result' style='height:3em; width: 20em;'></td></tr>";
         dlgWidth = 500;
     } else {
-        h += "<td><input tabIndex=1 name='result' size='12'></td></tr>";
+        h += "<td><input tabIndex=1 name='result' size='25'></td></tr>";
     }
     h += "</table>";
     dlg.setContent(h);
@@ -384,7 +394,7 @@ function sayGet(msg:string, prompt:string, defaultValue:string, title:string="Sy
         }
     }
     dlg.setCallback(masterCallback);
-    dlg.setButtons("Save=SAVE", "Cancel=CANCEL");
+    dlg.setButtons("Accept=SAVE", "Cancel=CANCEL");
     dlg.domObj.style.backgroundColor = bgcolor;
     dlg.setSize(200, dlgWidth, true);
     let frm = B.getForm("B_SAY_DIALOG");

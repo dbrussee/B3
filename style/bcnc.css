@@ -12,6 +12,20 @@ body {
   position: absolute;
 }
 
+fieldset {
+  border: 1px solid #2d77c2;
+  border-radius: .5em;
+  padding: .3em;
+  padding-top: 0;
+}
+
+fieldset legend {
+  margin-left: .9em;
+  color: navy;
+  padding-left: .3em;
+  padding-right: .3em;
+}
+
 .bcncPageHeader {
   padding: .2rem;
   position: relative;

@@ -23,3 +23,15 @@ table.BTable {
         }
     }
 }
+/*
+div.BTableScrollingContainer::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 15px;
+    background-color: gainsboro;
+}
+div.BTableScrollingContainer::-webkit-scrollbar-thumb {
+    border-radius: 7px;
+    background-color: rgba(0,0,0,.5);
+    box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
+*/

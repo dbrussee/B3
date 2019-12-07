@@ -14,14 +14,18 @@
         tblA.preRowRender = function(rownum,tr,cells,rd) {
             cells.col1.innerHTML = rownum + ". " + rd.col1;
         }
-        tblA.pairWithForm("tblAForm");
+        tblA.pairWithForm("tblAForm", "AED", null, function(frm, action) {
+            if (action == "DEL") return true;
+            var chk = frm.get();
+            if (chk.col1 == "") {
+                sayE("Column 1 must be entered!");
+                return false;
+            }
+        });
         tblA.setTableHeight("200px");
         tblA.addRow("Row 1, Column 1", "R1:C2", "R1:C3");
         tblA.addRow("Row 2, Column 1", "R2:C2", "R2:C3");
         setTestButton();
-    }
-    function test() {
-        location.href="form_features.html";
     }
     function setTestButton() {
         var isSet = B.getForm("frmA").get().agree;
@@ -48,9 +52,9 @@
         var func = function(rslt) { say("You chose item " + rslt); }
         if (isChoose) {
             if (typ == "") choose(msg, title, btns, func).setSize(200,800);
-            if (typ == "G") chooseG(msg, title, btns, func).setSize(200,800);
-            if (typ == "W") chooseW(msg, title, btns, func).setSize(200,800);
-            if (typ == "E") chooseE(msg, title, btns, func).setSize(200,800);
+            if (typ == "G") chooseG(msg, title, btns, func);
+            if (typ == "W") chooseW(msg, title, btns, func);
+            if (typ == "E") chooseE(msg, title, btns, func);
         } else {
             if (typ == "") ask(msg, title, func);
             if (typ == "G") askG(msg, title, func);
@@ -86,7 +90,7 @@
                 <tr><th>Last Name:</th><td><input name='lname' value='Brussee'></td></tr>
                 <tr><th>Agree to Terms:</th><td>
                     <label class='tog'><input onchange='setTestButton()' name='agree' type='checkbox'><i></i></label>
-                    &nbsp;&nbsp;&nbsp;<button id='btnTest' onclick='test()'>Form Elements</button>
+                    &nbsp;&nbsp;&nbsp;<button id='btnTest' onclick='top.loadPage("form_features.html")'>Form Elements</button>
                     &nbsp;&nbsp;&nbsp;<button id='btnTest' onclick='testFreeze()'>Test Freeze</button>
                     </td>
                 </tr>
@@ -153,103 +157,8 @@
         <span class='anchor' onclick='getSomething("")'>Prompt User</span>
         <br><button class='BDialogButton' onclick='popDialog()'>Close Me</button>
     </form>
-
-    <form class='BDialog' style='width: 1050px; height:460px' id='frmTest' title='Examples of (mainly) CSS form elements'>
-        <table class='form centerme' style='width: 1000px;'>
-            <tr class='head'><th class='head'>Input Type</th><th class='head'>Enabled</th><th class='head'>Disabled</th></tr>
-            <tr><th>Radio Buttons:</th>
-                <td style='padding-right: 1.5em;'>
-                    <label class="rad"><input type="radio" name="rad1" value="a" checked><i></i> Radio 1</label>&nbsp;&nbsp;
-                    <label class="rad"><input type="radio" name="rad1" value="b"><i></i> Radio 2</label>
-                </td>
-                <td>
-                    <label class="rad"><input disabled type="radio" name="rad2" value="a" checked><i></i> Radio 3</label>&nbsp;&nbsp;
-                    <label class="rad"><input disabled type="radio" name="rad2" value="b"><i></i> Radio 4</label>
-                </td>
-            </tr>
-            <tr><th>Toggles:</th>
-                <td style='padding-right: 1.5em;'>
-                    <label class="tog"><input type="checkbox" name="tog1" value="a" checked><i></i> Toggle 1</label>&nbsp;&nbsp;
-                    <label class="tog"><input type="checkbox" name="tog2" value="b"><i></i> Toggle 2</label>
-                </td>
-                <td>
-                    <label class="tog"><input disabled type="checkbox" name="tog3" value="a" checked><i></i> Toggle 3</label>&nbsp;&nbsp;
-                    <label class="tog"><input disabled type="checkbox" name="tog4" value="b"><i></i> Toggle 4</label>
-                </td>
-            </tr>
-            <tr><th>Checkboxes:</th>
-                <td style='padding-right: 1.5em;'>
-                    <label class="chb"><input type="checkbox" name="chb1" value="a" checked><i></i> Checkbox 1</label>&nbsp;&nbsp;
-                    <label class="chb"><input type="checkbox" name="chb2" value="b"><i></i> Checkbox 2</label>
-                </td>
-                <td>
-                    <label class="chb"><input disabled type="checkbox" name="chb3" value="a" checked><i></i> Checkbox 3</label>&nbsp;&nbsp;
-                    <label class="chb"><input disabled type="checkbox" name="chb4" value="b"><i></i> Checkbox 4</label>
-                </td>
-            </tr>
-            <tr><th>Checkmarks:</th>
-                <td style='padding-right: 1.5em;'>
-                    <label class="chk"><input type="checkbox" name="chk1" value="a" checked><i></i> Checkmark 1</label>&nbsp;&nbsp;
-                    <label class="chk"><input type="checkbox" name="ckb2" value="b"><i></i> Checkmark 2</label>
-                </td>
-                <td>
-                    <label class="chk"><input disabled type="checkbox" name="ckb3" value="a" checked><i></i> Checkmark 3</label>&nbsp;&nbsp;
-                    <label class="chk"><input disabled type="checkbox" name="ckb4" value="b"><i></i> Checkmark 4</label>
-                </td>
-            </tr>
-            <tr><th>Select / Dropdown:</th>
-                <td style='padding-right: 1.5em;'>
-                    <select name='sel1' size='1'><option value='a'>First option</option><option value='b'>A fairly long Second option</option><option value='c'>Third option</option></select>
-                </td>
-                <td>
-                    <select disabled name='sel2' size='1'><option value='a'>First option</option><option value='b'>Second option</option><option value='c'>Third option</option></select>
-                </td>
-            </tr>
-            <tr><th>Text input:</th>
-                <td style='padding-right: 1.5em;'>
-                    <input class='required' name='txt1' size='10' value='Required'>
-                    <input class='warningMarker required' name='txt1W' size='10' value='Warning'>
-                    <input class='errorMarker required' name='txt1E' size='10' value='Error'>
-                </td>
-                <td>
-                    <input disabled class='required' name='txt2' size='10' value='Example'>
-                    <input disabled class='warningMarker required' name='txt2W' size='10' value='Warning'>
-                    <input disabled class='errorMarker required' name='txt2E' size='10' value='Error'>
-                </td>
-            </tr>
-            <tr><th>&nbsp;</th>
-                <td style='padding-right: 1.5em;'>
-                    <input name='txt3' size='10' value='' placeholder='Placeholder'>
-                    <input class='warningMarker' name='txt3W' size='10' value='Warning'>
-                    <input class='errorMarker' name='txt3E' size='10' value='Error'>
-                </td>
-                <td>
-                    <input disabled name='txt4' size='10' value='Example'>
-                    <input disabled class='warningMarker' name='txt4W' size='10' value='Warning'>
-                    <input disabled class='errorMarker' name='txt4E' size='10' value='Error'>
-                </td>
-            </tr>
-            <tr><th>Textarea:</th>
-                <td style='padding-right: 1.5em;'>
-                    <textarea name='ta1'></textarea>
-                </td>
-                <td>
-                    <textarea disabled name='ta2'>This text area is disabled</textarea>
-                </td>
-            </tr>
-            <tr><th>Buttons:</th>
-                <td style='padding-right: 1.5em;'>
-                    <button onclick='say("You just clicked a normal button. Feel better now?")' name='btn1'>A Normal Button</button>
-                </td>
-                <td>
-                    <button disabled name='btn2'>A Normal Button</button>
-                </td>
-            </tr>
-        </table>
-        <button class='BDialogButton' onclick='popDialog()'>Close this test dialog</button>
-    </form>
     <form class='BDialog' id='tblAForm' style='height: 400px; width: 600px;' title='Main Table Data Form'>
-        <table class='form'>
+        <table class='form' style='margin: 0 auto;'>
             <tr><th>Column 1:</th><td><input class='required' name='col1'></td></tr>
             <tr><th>Column 2:</th><td><input name='col2'></td></tr>
             <tr><th>Column 3:</th><td><input name='col3'></td></tr>

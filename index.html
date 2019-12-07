@@ -7,11 +7,28 @@
     <title>B Library Demo</title>
     <link rel="stylesheet" type="text/css" href="./style/Bui/Bui.css">
     <link rel="stylesheet" type="text/css" href="./style/bcnc.css">
+
+    <script>
+    function init() {
+        loadPage("bq_home.html");
+    }
+    function loadPage(page) {
+        var iframe = document.createElement("iframe");
+        iframe.style.cssText = "width:100vw;" +
+            "height:calc(100vh - 100px);" +
+            "border:0; margin:0; padding:0;";
+        var div = document.getElementById("body");
+        div.innerHTML = "";
+        //while (div.hasChildNodes) div.removeChild(div.childNodes[0]);
+        div.appendChild(iframe);
+        iframe.src = "pages/" + page;
+    }
+    </script>
 </head>
-<body>
+<body onload='init()'>
     <div id='header' class='bcncPageHeader'>Page Header</div>
     <div id='body' class='bcncPageBody'>
-        <iframe style='width: 100vw; height: calc(100vh - 100px); border:0; margin:0; padding:0;' id='content' src='pages/test.html'></iframe>
+        
      </div>
     <div id='footer' class='bcncPageFooter'>Footer</div>
 </body>

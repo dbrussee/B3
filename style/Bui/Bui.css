@@ -1,3 +1,4 @@
+/*rgba(147, 213, 248,.5);*/
 /* $input-checked: rgba(27, 158, 27, 0.883); */
 /*$input-checked-disabled: rgba(194, 243, 197); */
 /* CUSTOM RADIO & CHECKBOXES http://stackoverflow.com/a/17541916/383904 */
@@ -45,7 +46,6 @@
 }
 
 
-
 .tog > i {
   display: inline-block;
   -webkit-transform: translate(0, -0.1em);
@@ -67,7 +67,7 @@
   -webkit-transition: inherit;
   transition: inherit;
   border: 1px solid dimgray;
-  background: transparent;
+  background: darkred;
   -webkit-box-shadow: 0;
           box-shadow: 0;
 }
@@ -76,7 +76,7 @@
   /* (RADIO CHECKED) <i> STYLE */
   margin-left: 0.84em;
   border: 1px solid transparent;
-  background: rgba(0, 0, 0, 0.7);
+  background: mediumseagreen;
   -webkit-box-shadow: 0;
           box-shadow: 0;
 }
@@ -97,7 +97,7 @@
 
 .tog:hover > input + i:after {
   border: 1px solid dimgray;
-  background: transparent;
+  background: darkred;
   -webkit-box-shadow: 0;
           box-shadow: 0;
   -webkit-box-shadow: 0.4em 0 rgba(0, 0, 0, 0.1);
@@ -106,7 +106,7 @@
 
 .tog:hover > input:checked + i:after {
   border: 1px solid transparent;
-  background: rgba(0, 0, 0, 0.7);
+  background: mediumseagreen;
   -webkit-box-shadow: 0;
           box-shadow: 0;
   border: 1px solid dimgray;
@@ -358,6 +358,7 @@ select:disabled {
 
 input:not([type]),
 textarea,
+input[type="password"],
 input[type="text"] {
   padding-left: .2em;
   padding-top: .15em;
@@ -369,6 +370,7 @@ input[type="text"] {
 
 input:not([type]):disabled,
 textarea:disabled,
+input[type="password"]:disabled,
 input[type="text"]:disabled {
   color: gray;
   background-color: snow;
@@ -376,11 +378,20 @@ input[type="text"]:disabled {
 
 input:not([type]).required,
 textarea.required,
+input[type="password"].required,
 input[type="text"].required {
-  background-image: linear-gradient(45deg, transparent, transparent 50%, red 50%, red 100%);
+  /*background-image: linear-gradient(45deg, transparent, transparent 50%, rgb(82, 82, 82) 50%, rgb(82, 82, 82) 100%);*/
+  background-image: linear-gradient(45deg, transparent, transparent 50%, blue 50%, blue 100%);
   background-position: top right;
   background-size: .6em .6em;
   background-repeat: no-repeat;
+}
+
+input:not([type]).readonly,
+textarea.readonly,
+input[type="password"].readonly,
+input[type="text"].readonly {
+  background-color: transparent;
 }
 
 textarea {
@@ -461,6 +472,17 @@ input[type="reset"].warning,
 .BTableFooterButton.warning {
   background-image: -webkit-gradient(linear, left top, left bottom, from(ghostwhite), to(lightyellow));
   background-image: linear-gradient(ghostwhite, lightyellow);
+}
+
+button.inline,
+input[type="submit"].inline,
+input[type="reset"].inline,
+.BTableFooterButton.inline {
+  font-size: .8em;
+  padding-left: .3em;
+  padding-right: .3em;
+  padding-top: .05em;
+  padding-bottom: .15em;
 }
 
 table.data {
@@ -580,6 +602,48 @@ table.form tr.fancy th {
   border-bottom: .4em solid transparent;
 }
 
+.BDropdownMenu {
+  position: absolute;
+  display: none;
+  top: 0;
+  left: 0;
+  border: 1px solic black;
+  -webkit-box-shadow: 2px 2px 3px silver;
+          box-shadow: 2px 2px 3px silver;
+  background-image: linear-gradient(45deg, rgba(44, 42, 86, 0.8), rgba(0, 0, 0, 0.8));
+}
+
+.BPopupMenuSpace {
+  padding-top: .2em;
+  margin-bottom: .1em;
+  background-color: silver;
+  font-size: .6em;
+}
+
+.BPopupMenuItem {
+  border-bottom: 1px dotted black;
+  padding-top: .2em;
+  padding-bottom: .2em;
+  cursor: pointer;
+  /*background-color: rgba(0, 0, 0, .6);*/
+  font-size: .9em;
+  color: white;
+}
+
+.BPopupMenuItem:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #d0ecf5;
+}
+
+.BPopupMenuItem div.ICON {
+  display: table-cell;
+  width: 25px;
+  text-align: center;
+  vertical-align: top;
+  padding-top: .15em;
+  font-size: 1.1em;
+}
+
 ::-webkit-input-placeholder {
   color: lightblue;
   opacity: 1;
@@ -618,7 +682,7 @@ table.BTable tr th.th {
 }
 
 table.BTable tbody tr.pickedRow {
-  background-color: rgba(147, 213, 248, 0.5);
+  background-color: #d0ecf5;
 }
 
 table.BTable tbody tr td {
@@ -629,6 +693,18 @@ table.BTable tbody tr td {
   border-bottom: .5px solid silver;
 }
 
+/*
+div.BTableScrollingContainer::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 15px;
+    background-color: gainsboro;
+}
+div.BTableScrollingContainer::-webkit-scrollbar-thumb {
+    border-radius: 7px;
+    background-color: rgba(0,0,0,.5);
+    box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
+*/
 * {
   /* background-color: rgb(39, 41, 41);
     color: white; */

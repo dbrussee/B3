@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../../style/Bui/Bui.css">
+<link rel="stylesheet" type="text/css" href="../../style/bcnc.css">
+<script src='../../js/B.js'></script>
+<script>
+function init() {
+    window.tblGroups = new B.Table("tblGroups", "tblGroups", "ren,prod,grpnum,grpnam,stat,statdate", "group");
+    tblGroups.setTableHeight(250);
+    tblGroups.preRowRender = function(rownum,tr,tds,rd) {
+        tds.ren.innerHTML = B.format.MMMYYYY(rd.ren);
+        if (rd.stat == "Missing") { tds.stat.style.color = "red"; tds.stat.style.backgroundColor = "yellow"; }
+    }
+
+    tblGroups.ondblclick = function() { top.loadPage("reva/log_return.html") };
+    tblGroups.footer.addButton("log", "Log Return", function() { top.loadPage("reva/log_return.html") }, true).disable();
+    tblGroups.footer.addButton("output", "Output", notcoded, true).disable();
+
+    window.drop = new B.DropdownMenu("mnuDrop", "nav", null, "<b>REVA Search / List</b>", 200);
+    drop.popup.addItem("home", function() { top.loadPage("bq_home.html") }, "home", "Blue Quote Home");
+}
+var rpcSearch = new B.RemoteMethod(null, 1200, 
+    function(rpc) {
+        tblGroups.clear();
+        freeze("Searching for results...");
+    }, function(isSuccess, rpc) {
+        thaw();
+        loadGroups();
+    }
+)
+function loadGroups() {
+    tblGroups.addRow("2/1/2020", "TOLKSDORF, ALLISON C.", "026814", "MACK CABLE CORPORATION", "Missing", "11/8/2019");
+    tblGroups.addRow("2/1/2020", "CAMPBELL, NANCY J", "051303", "B.E. BROWN INC. DBA PINEHURST", "Eligible", "11/8/2019");
+    tblGroups.addRow("2/1/2020", "SHERIDAN, JEREMY", "18297725", "BAXTER NORRIS CONSTRUNCTION, INC", "Eligible", "11/8/2019");
+    tblGroups.addRow("4/1/2020", "NEVILLE, DAVIDSON V", "045232", "BRADHAM CHIROPRACTIC CLINIC PA", "Eligible", "11/8/2019");
+}
+</script>
+</head>
+<body onload='init()' style='padding:.4rem; padding-top:0'>
+    <div id='mnuDrop' style='background-color: gainsboro'></div>
+    <div style='width:1000px' class='centerme'>
+        <form id='frmSearch' onsubmit='event.preventDefault(); rpcSearch.run(); return false;'>
+            <table class='form'>
+                <tr>
+                    <th>Renewal Month:</th><td><select name='rm_from' style='width:7em'></select> to <select name='rm_to' style='width:7em'></select></td>
+                    <th>Producer:</th><td><input name='prod' style='width:15em;'><button class='inline' onclick='notcoded()'>...</button><button class='inline' onclick='notcoded()'>c</button></td>
+                </tr>
+                <tr>
+                    <th>Group Name:</th><td style='padding-right:1.5em'><input name='grpnam' style='width:20em'></td>
+                    <th>Producer ID:</th><td><input name='prodid' style='width:9em;'></td>
+                </tr>
+                <tr>
+                    <th>Group Number:</th><td><input name='grpnum' style='width:10em;'></td>
+                    <th>Status:</th><td><select name='stat' style='width:12em;'></select>
+                        <select name='statsent' style='width:4em'><option value=''>Any</option></select></td>
+                </tr>
+                <tr>
+                    <th>Segment:</th><td><select name='segment' style='width: 6em;'></select>
+                        Type: <select name='segtype' style='width:7em;'></select></td>
+                    <th>Processor:</th><td><select name='processor' style='width:20em;'></select></td>
+                </tr>
+                <tr>
+                    <th>Sales Region:</th><td><select name='salesreg' style='width:15em'></select></td>
+                    <th>Status Date:</th><td>
+                        <input name='statdateF' style='width:8em' placeholder='MM/DD/YYYY'> to
+                        <input name='statdateT' style='width:8em' placeholder='MM/DD/YYYY'>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Direct Region:</th><td><select name='dirreg' style='width:15em'></select></td>
+                    <th>Sent Date:</th><td>
+                        <input name='sentdateF' style='width:8em' placeholder='MM/DD/YYYY'> to
+                        <input name='sentdateT' style='width:8em' placeholder='MM/DD/YYYY'>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Producer Mgr:</th><td><select name='prodmgr' style='width:15em'></select></td>
+                    <th>Ownership:</th><td><select name='ownership' style='width:15em'></select></td>
+                </tr>
+                <tr><td colspan='4' style='text-align:center'>
+                    <input type='submit' value='Search'>
+                </td></tr>
+            </table>
+        </form>
+    </div>
+    <div style='width:1050px' class='centerme'>
+        <br>
+        <table class='centerme' id='tblGroups'>
+            <tr><th data='ren,100'>Renewal</th>
+                <th data='prod,250'>Producer</th>
+                <th data='grpnum,100'>Group #</th>
+                <th data='grpnam,400'>Group Name</th>
+                <th data='stat,80,C'>Status</th>
+                <th data='statdate,120,C'>Date</th>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

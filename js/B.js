@@ -2,6 +2,25 @@ var B;
 (function (B) {
     B.version = '2.1ts';
 })(B || (B = {}));
+function notcoded() {
+    var h = "Sorry, this feature is not ready yet.";
+    sayE(h);
+}
+(function (B) {
+    var is;
+    (function (is) {
+        function oneOf() {
+            return B.util.whichOneOf.apply(null, arguments) >= 0;
+        }
+        is.oneOf = oneOf;
+        ;
+        function notOneOf() {
+            return B.util.whichOneOf.apply(null, arguments) < 0;
+        }
+        is.notOneOf = notOneOf;
+        ;
+    })(is = B.is || (B.is = {}));
+})(B || (B = {}));
 (function (B) {
     var format;
     (function (format) {
@@ -13,6 +32,157 @@ var B;
             return new Number(num).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
         }
         format.money = money;
+        function phone(num, ext) {
+            var rslt = "";
+            if (ext == undefined)
+                ext = "";
+            num = num.toString();
+            var test = B.util.keepOnlyChars(num, "0123456789");
+            if (test.length == 7) {
+                rslt = test.substr(0, 3) + "-" + test.substr(3);
+            }
+            else if (test.length == 10) {
+                rslt = "(" + test.substr(0, 3) + ") " + test.substr(3, 3) + "-" + test.substr(6);
+            }
+            else {
+                rslt = num;
+            }
+            if (ext != "") {
+                rslt += " x" + ext;
+            }
+            return rslt;
+        }
+        format.phone = phone;
+        function leftPad(init, length, char) {
+            var rslt = init;
+            if (char.length > 0) {
+                while (rslt.length < length) {
+                    rslt += char;
+                }
+            }
+            return rslt;
+        }
+        format.leftPad = leftPad;
+        var dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Decepmber"];
+        function dayOfWeek(day) {
+            if (day == undefined)
+                day = new Date();
+            if (typeof day == "string")
+                day = new Date(day);
+            if (typeof day == "object")
+                day = day.getDay();
+            return dayNames[day];
+        }
+        format.dayOfWeek = dayOfWeek;
+        function datePart(date, part) {
+            if (typeof date == "string")
+                date = new Date(date);
+            var rslt = "";
+            var tmp = 0;
+            switch (part) {
+                case "M":
+                    rslt = (date.getMonth() + 1).toString();
+                    break;
+                case "MM":
+                    rslt = leftPad(datePart(date, "M"), 2, "0");
+                    break;
+                case "MMM":
+                    rslt = monthNames[date.getMonth()].substr(0, 3);
+                    break;
+                case "MONTH":
+                    rslt = monthNames[date.getMonth()];
+                    break;
+                case "D":
+                    rslt = (date.getDate()).toString();
+                    break;
+                case "DD":
+                    rslt = leftPad(datePart(date, "D"), 2, "0");
+                    break;
+                case "ORDINAL":
+                case "ORD":
+                    var tmp_1 = date.getDate();
+                    switch (date.getDate()) {
+                        case 1:
+                        case 21:
+                        case 31: rslt = tmp_1.toString() + "st";
+                        case 2:
+                        case 22: rslt = tmp_1.toString() + "nd";
+                        case 3:
+                        case 23: rslt = tmp_1.toString() + "rd";
+                        default: rslt = tmp_1.toString() + "th";
+                    }
+                case "DOW":
+                case "DAY": rslt = dayOfWeek(date);
+                case "YYYY":
+                    rslt = (date.getFullYear()).toString();
+                    break;
+                case "H":
+                    rslt = (date.getHours()).toString();
+                    break;
+                case "H12":
+                    tmp_1 = date.getHours();
+                    if (tmp_1 > 12)
+                        tmp_1 -= 12;
+                    rslt = tmp_1.toString();
+                    break;
+                case "HH12":
+                    rslt = leftPad(datePart(date, "H12"), 2, "0");
+                    break;
+                case "HH":
+                    rslt = leftPad(datePart(date, "H"), 2, "0");
+                    break;
+                case "a":
+                    tmp_1 = date.getHours();
+                    rslt = tmp_1 < 13 ? "a" : "p";
+                    break;
+                case "A":
+                    rslt = (datePart(date, "a") == "a") ? "A" : "P";
+                    break;
+                case "am":
+                    rslt = (datePart(date, "a") == "a") ? "am" : "pm";
+                    break;
+                case "AM":
+                    rslt = (datePart(date, "a") == "a") ? "AM" : "PM";
+                    break;
+                case "NN":
+                case "MI":
+                    rslt = leftPad(date.getMinutes().toString(), 2, "0");
+                    break;
+                case "SS":
+                    rslt = leftPad(date.getSeconds().toString(), 2, "0");
+                    break;
+                case "SSS":
+                    rslt = leftPad(date.getMinutes().toString(), 2, "0");
+                    break;
+            }
+            return rslt;
+        }
+        format.datePart = datePart;
+        function MMDDYYYY(date) { return datePart(date, "MM") + "/" + datePart(date, "DD") + "/" + datePart(date, "YYYY"); }
+        format.MMDDYYYY = MMDDYYYY;
+        function MDYYYY(date) { return datePart(date, "M") + "/" + datePart(date, "D") + "/" + datePart(date, "YYYY"); }
+        format.MDYYYY = MDYYYY;
+        function MMMYYYY(date) { return datePart(date, "MMM") + ", " + datePart(date, "YYYY"); }
+        format.MMMYYYY = MMMYYYY;
+        function MONTHYYYY(date) { return datePart(date, "MONTH") + ", " + datePart(date, "YYYY"); }
+        format.MONTHYYYY = MONTHYYYY;
+        function MYYYY(date) { return datePart(date, "M") + "/" + datePart(date, "YYYY"); }
+        format.MYYYY = MYYYY;
+        function HNN(date, ap) { return datePart(date, "H") + ":" + datePart(date, "MI") + ap == undefined ? "" : datePart(date, ap); }
+        format.HNN = HNN;
+        function HHNN(date, ap) { return datePart(date, "HH") + ":" + datePart(date, "MI") + ap == undefined ? "" : datePart(date, ap); }
+        format.HHNN = HHNN;
+        function HNNSS(date, ap) { return datePart(date, "H") + ":" + datePart(date, "MI") + ":" + datePart(date, "SS") + ap == undefined ? "" : datePart(date, ap); }
+        format.HNNSS = HNNSS;
+        function HHNNSS(date, ap) { return datePart(date, "HH") + ":" + datePart(date, "MI") + ":" + datePart(date, "SS") + ap == undefined ? "" : datePart(date, ap); }
+        format.HHNNSS = HHNNSS;
+        function TS(date) { return MMDDYYYY(date) + " " + HHNNSS(date) + ":" + datePart(date, "SSS"); }
+        format.TS = TS;
+        function FANCY(date) {
+            return datePart(date, "DOW") + " the " + datePart(date, "ORDINAL") + " of " + datePart(date, "MONTH");
+        }
+        format.FANCY = FANCY;
     })(format = B.format || (B.format = {}));
 })(B || (B = {}));
 (function (B) {
@@ -34,6 +204,58 @@ var B;
             }
         }
         util.killElement = killElement;
+        function whichOneOf(txt) {
+            var a = txt.toString().toUpperCase();
+            if (arguments.length > 2) {
+                for (var i = 1; i < arguments.length; i++) {
+                    var b = arguments[i].toUpperCase();
+                    if (a == b)
+                        return i - 1;
+                }
+            }
+            else {
+                var itm = arguments[1];
+                if (typeof itm == "string") {
+                    var lst = itm.split(",");
+                    for (var i = 0; i < lst.length; i++) {
+                        var b = lst[i].toUpperCase();
+                        if (a == b)
+                            return i;
+                    }
+                }
+                else { // list passed in
+                    for (var i = 0; i < itm.length; i++) {
+                        var b = itm[i].toUpperCase();
+                        if (a == b)
+                            return i;
+                    }
+                }
+            }
+            return -1;
+        }
+        util.whichOneOf = whichOneOf;
+        function stripChars(orig, chars) {
+            var rslt = "";
+            for (var i = 0; i < orig.length; i++) {
+                var char = orig.substr(i, 1);
+                if (chars.indexOf(char) >= 0)
+                    continue;
+                rslt += char;
+            }
+            return rslt;
+        }
+        util.stripChars = stripChars;
+        function keepOnlyChars(orig, chars) {
+            var rslt = "";
+            for (var i = 0; i < orig.length; i++) {
+                var char = orig.substr(i, 1);
+                if (chars.indexOf(char) < 0)
+                    continue;
+                rslt += char;
+            }
+            return rslt;
+        }
+        util.keepOnlyChars = keepOnlyChars;
         function makeElement(html) {
             var div = document.createElement('div');
             div.innerHTML = html.trim();
@@ -94,6 +316,13 @@ var B;
             return container;
         }
         util.addOverlayText = addOverlayText;
+        function findNodeWithAttribute(node, attr) {
+            while (node != document.body && !node.hasAttribute(attr)) {
+                node = node.parentElement;
+            }
+            return node;
+        }
+        util.findNodeWithAttribute = findNodeWithAttribute;
         function parentNode(obj, parentType) {
             var pn = obj.parentNode;
             if (parentType != undefined) {
@@ -152,6 +381,7 @@ var B;
             if (typeof target == "string")
                 target = document.getElementById(target);
             this.target = target;
+            this.target.style.zIndex = "99";
             this.target.style.position = "relative";
             this.renderAs = renderAs;
             if (Timer.timerList.length == 0) {
@@ -179,7 +409,7 @@ var B;
                 this.target.style.width = "38px";
                 this.target.style.height = "38px";
                 this.secondsElement = document.createElement("div");
-                this.secondsElement.style.cssText = "position:absolute; height:100%; width:100%; top:0; left:0";
+                this.secondsElement.style.cssText = "position:absolute; height:90%; width:90%; top:5%; left:5%;z-index:99";
                 this.secondsElement.className = "loader";
                 this.target.appendChild(this.secondsElement);
                 this.minutesElement = document.createElement("div");
@@ -205,7 +435,7 @@ var B;
         Timer.prototype["delete"] = function () {
             delete B.Timer.timers[this.id];
             for (var i = 0; i < B.Timer.timerList.length; i++) {
-                if (B.Timer.timerList[i] == this.id) {
+                if (B.Timer.timerList[i].id == this.id) {
                     B.Timer.timerList.splice(i, 1);
                 }
             }
@@ -280,7 +510,6 @@ var B;
     }());
     B.Timer = Timer;
 })(B || (B = {}));
-console.log(B.version);
 /// <reference path="B.ts" />
 var B;
 /// <reference path="B.ts" />
@@ -304,6 +533,7 @@ var B;
             this.form = null;
             this.tallness = 0;
             this.wideness = 0;
+            this.zIndex = 0;
             if (B.Dialog.dialogs[id] != undefined) {
                 return B.Dialog.get(id);
             }
@@ -368,6 +598,9 @@ var B;
             B.Dialog.dialogCount++;
             if (B.Dialog.dialogCount == 1) {
                 B.Dialog.overlay = document.createElement("div");
+                B.Dialog.overlay.ondblclick = function () {
+                    B.Dialog.get().center();
+                };
                 document.body.appendChild(B.Dialog.overlay);
                 B.Dialog.overlay.style.cssText =
                     "position: absolute; " +
@@ -381,12 +614,17 @@ var B;
             }
             this.form = new B.Form(id);
         }
+        Dialog.prototype.getForm = function () { return this.form; };
         Dialog.prototype.setContent = function (html) {
             this.content.innerHTML = html;
             return this;
         };
         Dialog.prototype.setTitle = function (html) {
             this.title.innerHTML = html;
+            return this;
+        };
+        Dialog.prototype.reset = function () {
+            this.form.reset();
             return this;
         };
         Dialog.prototype.setBottomMessage = function (html) {
@@ -400,7 +638,7 @@ var B;
         Dialog.prototype.center = function () {
             var rect = this.domObj.getBoundingClientRect();
             this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
-            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - .5em)";
             return this;
         };
         Dialog.prototype.open = function (center) {
@@ -410,6 +648,7 @@ var B;
             this.domObj.style.display = "inline-block";
             var z = (B.Dialog.dialogStack.length * 2) + 10;
             B.Dialog.overlay.style.zIndex = z;
+            this.zIndex = z;
             B.Dialog.overlay.style.display = "block";
             window.onkeydown = function (event) {
                 var dlg = B.Dialog.get();
@@ -428,8 +667,9 @@ var B;
             }
             if (center) {
                 // Calculate positioning
-                this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
-                this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+                //this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
+                //this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
+                this.center();
             }
             this.isFirstOpen = false;
             this.setNoClose(false);
@@ -638,7 +878,7 @@ function freeze(msg, title) {
     dlg.open().center();
     dlg.setNoClose();
     dlg.setBottomMessage("<div id='B_FREEZE_TIMER'></div>");
-    B.Timer.add("B_FREEZE_TIMER", "B_FREEZE_TIMER", "SPIN");
+    var timer = B.Timer.add("B_FREEZE_TIMER", "B_FREEZE_TIMER", "SPIN");
     return dlg;
 }
 function thaw() {
@@ -689,7 +929,7 @@ function sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, all
         dlgWidth = 500;
     }
     else {
-        h += "<td><input tabIndex=1 name='result' size='12'></td></tr>";
+        h += "<td><input tabIndex=1 name='result' size='25'></td></tr>";
     }
     h += "</table>";
     dlg.setContent(h);
@@ -701,7 +941,7 @@ function sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, all
         }
     };
     dlg.setCallback(masterCallback);
-    dlg.setButtons("Save=SAVE", "Cancel=CANCEL");
+    dlg.setButtons("Accept=SAVE", "Cancel=CANCEL");
     dlg.domObj.style.backgroundColor = bgcolor;
     dlg.setSize(200, dlgWidth, true);
     var frm = B.getForm("B_SAY_DIALOG");
@@ -820,9 +1060,10 @@ var B;
                     el.onkeydown = function (e) {
                         if (e.keyCode == 9 || e.which == 9) {
                             e.preventDefault();
-                            var s = this.selectionStart;
-                            this.value = this.value.substring(0, this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
-                            this.selectionEnd = s + 1;
+                            var el_1 = this;
+                            var s = el_1.selectionStart;
+                            el_1.value = el_1.value.substring(0, el_1.selectionStart) + "\t" + el_1.value.substring(el_1.selectionEnd);
+                            el_1.selectionEnd = s + 1;
                         }
                     };
                 }
@@ -841,12 +1082,14 @@ var B;
                     items[el.name] = el.checked;
                 }
                 else if (el.type == "select-one") {
-                    items[el.name] = el.options[el.selectedIndex].value.trim();
+                    var sel = els.item(elnum);
+                    items[el.name] = sel.options[sel.selectedIndex].value.trim();
                 }
                 else if (el.type == "select-multiple") {
+                    var sel = els.item(elnum);
                     var sels = [];
-                    for (var optnum = 0; optnum = el.options.length; optnum++) {
-                        var opt = el.options[optnum];
+                    for (var optnum = 0; optnum = sel.options.length; optnum++) {
+                        var opt = sel.options[optnum];
                         if (opt.selected)
                             sels.push(opt.value.trim());
                     }
@@ -878,13 +1121,19 @@ var B;
                     return;
                 var val = args[argnum + 1];
                 var el = this.form.elements[field];
-                if (el.type == "checkbox") {
-                    el.checked = val;
-                }
-                else {
-                    el.value = val;
+                if (el != null) {
+                    if (el.type == "checkbox") {
+                        el.checked = val;
+                    }
+                    else {
+                        el.value = val;
+                    }
                 }
             }
+        };
+        Form.prototype.freeze = function () {
+        };
+        Form.prototype.thaw = function () {
         };
         Form.prototype.reset = function () {
             this.form.reset();
@@ -894,7 +1143,205 @@ var B;
     }());
     B.Form = Form;
 })(B || (B = {}));
-console.log("Form " + B.version);
+/// <reference path="B.ts" />
+var B;
+/// <reference path="B.ts" />
+(function (B) {
+    var DropdownMenu = /** @class */ (function () {
+        function DropdownMenu(containerId, id, icon, title, width) {
+            if (width === void 0) { width = 0; }
+            this.container = null;
+            this.element = null;
+            this.enabled = true;
+            this.visible = true;
+            this.popup = null;
+            this.container = document.getElementById(containerId);
+            this.element = document.createElement("div");
+            this.element.setAttribute("data-BDROPDOWN", id);
+            DropdownMenu.menus[id] = this;
+            this.element.style.cssText = "display:inline-block; padding: .5em; padding-top:0; position:relative;";
+            this.element.className = "anchor";
+            if (icon != null) {
+                var spn_1 = document.createElement("span");
+                spn_1.style.cssText = "font-size: 1.2em; display:inline-block; position:relative; top:.14em; width:1.2em;";
+                spn_1.className = "material-icons";
+                spn_1.innerHTML = icon;
+                this.element.appendChild(spn_1);
+                //spn = document.createElement("span");
+                //spn.innerHTML = "&nbsp;";
+                //this.element.appendChild(spn);
+            }
+            var spn = document.createElement("span");
+            spn.style.cssText = "display:inline-block; position:relative;";
+            spn.innerHTML = title;
+            this.element.appendChild(spn);
+            this.container.appendChild(this.element);
+            this.element.onclick = function (event) {
+                var target = B.util.findNodeWithAttribute(event.target, "data-BDROPDOWN");
+                var mnu = DropdownMenu.menus[target.getAttribute("data-BDROPDOWN")];
+                if (mnu.popup.visible) {
+                    mnu.hide();
+                }
+                else {
+                    event.stopPropagation();
+                    if (mnu.enabled) {
+                        var el = mnu.element;
+                        var rect = el.getBoundingClientRect();
+                        mnu.show(rect.left + 6, rect.bottom - 6);
+                    }
+                }
+            };
+            this.popup = new PopupMenu('DROPDOWN_' + id, width);
+            document.body.addEventListener("click", function () {
+                B.PopupMenu.hideAll();
+            });
+        }
+        DropdownMenu.prototype.show = function (left, top) {
+            for (var id in DropdownMenu.menus) {
+                DropdownMenu.menus[id].popup.hide();
+            }
+            if (this.popup.visible)
+                return;
+            this.popup.show(left, top);
+        };
+        DropdownMenu.prototype.hide = function () {
+            for (var id in DropdownMenu.menus) {
+                DropdownMenu.menus[id].popup.hide();
+            }
+        };
+        DropdownMenu.prototype.enable = function (torf) {
+            if (torf === void 0) { torf = true; }
+            if (!torf)
+                return this.disable();
+            this.element.className = "anchor";
+            this.element.style.color = "";
+            this.enabled = true;
+            return this;
+        };
+        DropdownMenu.prototype.disable = function (torf) {
+            if (torf === void 0) { torf = true; }
+            if (!torf)
+                return this.enable();
+            this.element.className = "";
+            this.element.style.color = "brown";
+            this.enabled = false;
+            return this;
+        };
+        DropdownMenu.menus = {};
+        DropdownMenu.menuCount = 0;
+        return DropdownMenu;
+    }());
+    B.DropdownMenu = DropdownMenu;
+    var MenuItem = /** @class */ (function () {
+        function MenuItem(parentId, id, callback, icon, text) {
+            this.id = "";
+            this.callback = null;
+            this.icon = "";
+            this.text = "";
+            this.enabled = true;
+            this.visible = true;
+            this.element = null;
+            this.iconDiv = null;
+            this.textDiv = null;
+            this.id = id;
+            this.callback = callback;
+            this.icon = icon;
+            this.text = text;
+            this.element = document.createElement("div");
+            this.element.setAttribute("data-BMENUITEM", parentId + "." + id);
+            this.element.onclick = function (event) {
+                var target = B.util.findNodeWithAttribute(event.target, "data-BMENUITEM");
+                var myids = target.getAttribute("data-BMENUITEM").split("."); // parent,child
+                var pop = PopupMenu.menus[myids[0]];
+                var itm = pop.items[myids[1]];
+                if (itm.enabled) {
+                    pop.hide();
+                    itm.callback();
+                }
+                else {
+                    event.stopPropagation(); // Dont close
+                }
+            };
+            this.element.className = "BPopupMenuItem";
+            this.iconDiv = document.createElement("div");
+            this.iconDiv.className = "ICON material-icons";
+            //this.iconDiv.style.cssText = "display:table-cell; width:1.2em; text-align:center; vertical-align:top;";
+            this.element.appendChild(this.iconDiv);
+            this.textDiv = document.createElement("div");
+            this.textDiv.className = "TEXT";
+            this.textDiv.style.cssText = "display:table-cell; vertical-align:top;";
+            this.element.appendChild(this.textDiv);
+            this.setIcon(icon);
+            this.setText(text);
+        }
+        MenuItem.prototype.setIcon = function (icon) { this.iconDiv.innerHTML = icon; };
+        MenuItem.prototype.setText = function (text) { this.textDiv.innerHTML = text; };
+        MenuItem.prototype.enable = function (torf) {
+            if (torf === void 0) { torf = true; }
+            if (!torf)
+                return this.disable();
+            this.element.style.color = "";
+            this.enabled = true;
+            return this;
+        };
+        MenuItem.prototype.disable = function (torf) {
+            if (torf === void 0) { torf = true; }
+            if (!torf)
+                return this.enable();
+            this.element.style.color = "orange";
+            this.enabled = false;
+            return this;
+        };
+        return MenuItem;
+    }());
+    B.MenuItem = MenuItem;
+    var PopupMenu = /** @class */ (function () {
+        function PopupMenu(id, width) {
+            this.container = null;
+            this.id = "";
+            this.items = [];
+            this.x = 0;
+            this.y = 0;
+            this.visible = false;
+            this.id = id;
+            this.container = document.createElement("div");
+            this.container.className = "BDropdownMenu";
+            if (width > 0)
+                this.container.style.width = width.toString() + "px";
+            document.body.appendChild(this.container);
+            PopupMenu.menus[id] = this;
+        }
+        PopupMenu.prototype.show = function (left, top) {
+            this.container.style.top = top.toString() + "px";
+            this.container.style.left = left.toString() + "px";
+            this.container.style.display = "block";
+            this.visible = true;
+        };
+        PopupMenu.prototype.hide = function () {
+            this.container.style.display = "none";
+            this.visible = false;
+        };
+        PopupMenu.hideAll = function () {
+            for (var id in PopupMenu.menus) {
+                PopupMenu.menus[id].hide();
+            }
+        };
+        PopupMenu.prototype.addItem = function (id, callback, icon, text) {
+            var itm = new MenuItem(this.id, id, callback, icon, text);
+            this.container.appendChild(itm.element);
+            this.items[id] = itm;
+        };
+        PopupMenu.prototype.addSpace = function () {
+            var div = document.createElement("div");
+            div.className = "BPopupMenuSpace";
+            this.container.appendChild(div);
+            //this.items[id] = itm;
+        };
+        PopupMenu.menus = {};
+        return PopupMenu;
+    }());
+    B.PopupMenu = PopupMenu;
+})(B || (B = {}));
 /// <reference path="B.ts" />
 var B;
 /// <reference path="B.ts" />
@@ -1006,9 +1453,13 @@ var B;
                     // Check if you sent in a millisecond counter for test purposes
                     if (!isNaN(parseInt(this.methodName, 10))) {
                         // Simulate taking some time to do the remote method
-                        window.setTimeout(function () {
-                            this.onAfter.call(null, true, this);
-                        }, parseInt(this.methodName, 10));
+                        window.setTimeout(function (remoteMethod) {
+                            remoteMethod.onAfter.call(null, true, remoteMethod);
+                        }, parseInt(this.methodName, 10), this);
+                        return;
+                    }
+                    else {
+                        this.onAfter(true, this);
                         return;
                     }
                 }
@@ -1053,24 +1504,29 @@ var B;
         function TableColumn(id, width, just, head, headJust) {
             if (just === void 0) { just = "L"; }
             if (head === void 0) { head = ""; }
-            if (headJust === void 0) { headJust = "L"; }
+            if (headJust === void 0) { headJust = ""; }
             this.id = "BEEF";
             this.width = "0";
             this.just = "L";
             this.head = "";
             this.headJust = "L";
             this.id = id;
+            if (!isNaN(width))
+                width += "px";
             this.width = width;
             this.just = just;
             this.head = head;
+            if (headJust == "")
+                headJust = just;
             this.headJust = headJust;
         }
         return TableColumn;
     }());
     B.TableColumn = TableColumn;
     var Table = /** @class */ (function () {
-        function Table(tbl, id, datasetCodes, title) {
-            if (title === void 0) { title = ""; }
+        function Table(tbl, id, datasetCodes, title1, title2) {
+            if (title1 === void 0) { title1 = "row"; }
+            if (title2 === void 0) { title2 = ""; }
             this.id = "";
             this.container = null;
             this.table = null;
@@ -1098,7 +1554,7 @@ var B;
             this.anyHeaders = false;
             this.table = document.getElementById(tbl);
             this.container = document.createElement("div");
-            this.container.style.cssText = "display:inline-block; margin:0; border:0; padding:0; position:relative;";
+            this.container.style.cssText = "text-align:left; display:inline-block; margin:0; border:0; padding:0; position:relative;";
             this.table.parentNode.insertBefore(this.container, this.table);
             // Move the table as defined in the HTML into the container
             this.container.appendChild(this.table);
@@ -1106,12 +1562,14 @@ var B;
             this.tableContainer = document.createElement("div");
             this.tableContainer.setAttribute("data-BTABLE", id);
             this.tableContainer.onclick = function (event) {
-                var tblId = event.target.getAttribute("data-BTABLE");
+                var tmp = B.util.findNodeWithAttribute(event.target, "data-BTABLE");
+                var tblId = tmp.getAttribute("data-BTABLE");
                 var btbl = B.Table.cache[tblId];
                 btbl.unpick();
             };
-            this.tableContainer.style.cssText = "overflow-y:overlay; overflow-x:hidden; " +
-                "overflow-style:-ms-autohiding-scrollbar; " +
+            this.tableContainer.className = "BTableScrollingContainer";
+            this.tableContainer.style.cssText = "overflow-y:scroll; overflow-x:hidden; " +
+                //"overflow-style:-ms-autohiding-scrollbar; " +
                 "display:inline-block; " +
                 "margin:0; border:0; padding:0;";
             this.tableContainer.style.width = this.table.style.width;
@@ -1141,14 +1599,15 @@ var B;
             this.table.style.tableLayout = "fixed";
             this.table.style.border = "0";
             if (this.columnList.length > 1) {
-                var colgroup_1 = document.createElement("colgroup");
-                this.columnList.forEach(function (itm) {
+                var colgroup = document.createElement("colgroup");
+                for (var colnum = 0; colnum < this.columnList.length; colnum++) {
+                    var itm = this.columnList[colnum];
                     var col = document.createElement("col");
-                    if (itm.width > 0)
-                        col.style.width = itm.width + "px";
-                    colgroup_1.appendChild(col);
-                });
-                this.table.appendChild(colgroup_1);
+                    var w = itm.width;
+                    col.style.width = itm.width;
+                    colgroup.appendChild(col);
+                }
+                this.table.appendChild(colgroup);
             }
             this.thead = document.createElement("thead");
             this.table.appendChild(this.thead);
@@ -1159,7 +1618,8 @@ var B;
             if (this.anyHeaders) {
                 var tr_1 = document.createElement("tr");
                 tr_1.style.border = "10px";
-                this.columnList.forEach(function (itm) {
+                for (var colnum = 0; colnum < this.columnList.length; colnum++) {
+                    var itm = this.columnList[colnum];
                     var el = document.createElement("th");
                     el.className = "th";
                     el.style.cssText = "position:sticky; top:0;";
@@ -1169,7 +1629,8 @@ var B;
                     if (just != "")
                         el.style.textAlign = just;
                     tr_1.appendChild(el);
-                });
+                }
+                tr_1.cells[tr_1.cells.length - 1].style.paddingRight = "20px";
                 this.thead.appendChild(tr_1);
             }
             this.table.setAttribute("data-BTABLE", this.id);
@@ -1190,13 +1651,19 @@ var B;
             }
             Table.cache[this.id] = this;
             this.table.onclick = function (event) {
+                document.body.click();
                 event.stopPropagation();
                 var td = event.target;
                 var tr = B.util.parentNode(td, "tr");
                 var table = B.util.parentNode(tr, "table");
                 var cacheNumber = table.getAttribute("data-BTABLE");
                 var btbl = Table.cache[cacheNumber];
-                btbl.pickRow(tr.rowIndex, td);
+                if (event.shiftKey) {
+                    btbl.unpick();
+                }
+                else {
+                    btbl.pickRow(tr.rowIndex, td);
+                }
             };
             this.table.ondblclick = function (event) {
                 // In order to be double-clicked, it must have been clicked
@@ -1204,6 +1671,7 @@ var B;
                 var td = event.target;
                 var tr = B.util.parentNode(td, "tr");
                 var table = B.util.parentNode(tr, "table");
+                table = B.util.findNodeWithAttribute(table, "data-BTABLE");
                 var cacheNumber = table.getAttribute("data-BTABLE");
                 var btbl = Table.cache[cacheNumber];
                 var rn = tr.rowIndex;
@@ -1251,6 +1719,8 @@ var B;
                                 this.disable();
                                 return;
                             }
+                            if (this.enabled)
+                                return;
                             this.enabled = true;
                             this.div.style.cursor = "pointer";
                             //this.div.style.color = "";
@@ -1263,6 +1733,8 @@ var B;
                                 this.enable();
                                 return;
                             }
+                            if (!this.enabled)
+                                return;
                             this.enabled = false;
                             this.div.style.cursor = "default";
                             //this.div.style.color = "firebrick";
@@ -1272,13 +1744,14 @@ var B;
                         }
                     };
                     var btn = document.createElement("button");
-                    btn.className = "BTableFooterButton enabled";
+                    btn.className = "BTableFooterButton enabled inline";
                     btn.setAttribute("data-BTABLE", this.tableObject.table.getAttribute("data-BTABLE"));
                     btn.setAttribute("data-BUTTONID", id);
                     btn.innerHTML = title;
                     btn.id = this.tableObject.id + "_BTN_" + this.buttonList.length;
                     btn.onclick = function () {
                         var div = event.target;
+                        div = B.util.findNodeWithAttribute(div, "data-BTABLE");
                         var cacheNumber = div.getAttribute("data-BTABLE");
                         var btbl = Table.cache[cacheNumber];
                         var btn = btbl.footer.buttons[div.getAttribute("data-BUTTONID")];
@@ -1312,11 +1785,16 @@ var B;
             }
             this.table.style.visibility = "visible";
             this.dataset = new Dataset(datasetCodes);
+            this.rowCountTitle = title1;
+            this.rowCountTitle2 = title2;
+            this.setMessage();
         }
         Table.prototype.preRowRender = function (rn, row, cells, rd) { return true; };
         Table.prototype.onclick = function (td, tr, rd, changed) { return; };
         Table.prototype.ondblclick = function (td, tr, rd) { return; };
         Table.prototype.setTableHeight = function (height) {
+            if (typeof height == "number")
+                height = height.toString() + "px";
             this.tableContainer.style.height = height;
             this.tableContainer.style.overflowY = "scroll";
         };
@@ -1340,17 +1818,20 @@ var B;
                 tr.className = "pickedRow";
             this.pickedRow = rownum;
             // Handle tracked footer buttons
-            for (var key in this.footer.buttons) {
-                var btn = this.footer.buttons[key];
-                if (btn.track && !btn.enabled)
-                    btn.enable();
-            }
+            this.handleTrackedButtons();
             // Do user click action (if any)
             var cells = this.makeCellsCollection(tr);
             if (td == undefined)
                 td = tr.cells[0];
             if (this.onclick != null)
                 this.onclick.call(this, td, tr, rd, cells, changed);
+        };
+        Table.prototype.handleTrackedButtons = function () {
+            for (var key in this.footer.buttons) {
+                var btn = this.footer.buttons[key];
+                if (btn.track)
+                    btn.enable(this.pickedRow != null);
+            }
         };
         Table.prototype.unpick = function () {
             var curtr = this.getTableRow();
@@ -1359,11 +1840,9 @@ var B;
             curtr.className = "";
             this.pickedRow = null;
             // Handle tracked footer buttons
-            for (var key in this.footer.buttons) {
-                var btn = this.footer.buttons[key];
-                if (btn.track && btn.enabled)
-                    btn.disable();
-            }
+            this.handleTrackedButtons();
+            if (this.onclick != null)
+                this.onclick.call(this, null, null, null, null, true);
         };
         Table.prototype.pairWithForm = function (formId, supportedActions, onFormFill, onFormSave) {
             if (supportedActions === void 0) { supportedActions = "AECD"; }
@@ -1411,7 +1890,7 @@ var B;
             frm.reset();
             var okToOpen = true;
             if (this.onFormFill != null) {
-                okToOpen = this.onFormFill(frm);
+                okToOpen = this.onFormFill(frm, "ADD");
                 if (okToOpen == undefined)
                     okToOpen = true;
             }
@@ -1433,9 +1912,15 @@ var B;
                 var cname = this.dataset.columns[i];
                 params.push(chk[cname]);
             }
+            var rslt = this.onFormSave(frm, "NEW");
+            if (rslt == undefined)
+                rslt = true;
+            if (!rslt)
+                return;
             this.addRow.apply(this, params);
             this.pickRow(this.table.rows.length - 1);
             popDialog();
+            this.handleTrackedButtons();
         };
         Table.prototype.formEdit = function () {
             if (this.pairedFormId == null)
@@ -1454,7 +1939,7 @@ var B;
             }
             var okToOpen = true;
             if (this.onFormFill != null) {
-                okToOpen = this.onFormFill(frm);
+                okToOpen = this.onFormFill(frm, "EDIT");
                 if (okToOpen == undefined)
                     okToOpen = true;
             }
@@ -1477,8 +1962,14 @@ var B;
             for (var cname in this.dataset.columnNames) {
                 rd[cname] = chk[cname];
             }
+            var rslt = this.onFormSave(frm, "NEW");
+            if (rslt == undefined)
+                rslt = true;
+            if (!rslt)
+                return;
             this.renderRow(this.pickedRow);
             popDialog();
+            this.handleTrackedButtons();
         };
         Table.prototype.formCopy = function () {
             if (this.pairedFormId == null)
@@ -1497,7 +1988,7 @@ var B;
             }
             var okToOpen = true;
             if (this.onFormFill != null) {
-                okToOpen = this.onFormFill(frm);
+                okToOpen = this.onFormFill(frm, "COPY");
                 if (okToOpen == undefined)
                     okToOpen = true;
             }
@@ -1515,6 +2006,14 @@ var B;
         Table.prototype.formDelete = function () {
             var msg = "Are you sure you want to delete the selected " + this.rowCountTitle + "?";
             var btbl = this;
+            var okToDelete = true;
+            if (this.onFormSave != null) {
+                var okToDelete_1 = this.onFormSave(null, "DEL");
+                if (okToDelete_1 == undefined)
+                    okToDelete_1 = true;
+            }
+            if (!okToDelete)
+                return;
             chooseW(msg, "Delete " + this.rowCountTitle, "Yes - Delete=YES|Cancel", function (rslt) {
                 if (rslt == "YES")
                     btbl.saveRowDelete();
@@ -1525,10 +2024,11 @@ var B;
             if (rd == null)
                 return;
             var tr = this.getTableRow();
+            this.unpick();
             this.dataset.rows.splice(tr.rowIndex - 1, 1);
             this.table.deleteRow(tr.rowIndex);
-            this.unpick();
             popDialog();
+            this.handleTrackedButtons();
         };
         Table.prototype.getDataRow = function (rownum) {
             if (rownum == undefined) {
@@ -1550,6 +2050,11 @@ var B;
                     rownum = this.pickedRow;
             }
             return (rownum == null ? null : this.tbody.rows[rownum]);
+        };
+        Table.prototype.clear = function () {
+            this.dataset.rows = [];
+            while (this.table.rows.length > 1)
+                this.table.deleteRow(1);
         };
         Table.prototype.addRows = function (data) {
             var rows = data.split("\n");
@@ -1595,8 +2100,14 @@ var B;
                     if (this.rowCountTitle2 == "") {
                         this.rowCountTitle2 = this.rowCountTitle + "s";
                     }
-                    this.footerMessageContainer.innerHTML = B.format.numberWithCommas(count) + " " + this.rowCountTitle2;
+                    msg = B.format.numberWithCommas(count);
+                    if (msg == "0")
+                        msg = "No";
+                    this.footerMessageContainer.innerHTML = msg + " " + this.rowCountTitle2;
                 }
+            }
+            else {
+                this.footerMessageContainer.innerHTML = msg;
             }
         };
         Table.prototype.preloadRowToTable = function (rownum) {

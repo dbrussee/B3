@@ -108,9 +108,12 @@ namespace B {
                     // Check if you sent in a millisecond counter for test purposes
                     if (!isNaN(parseInt(this.methodName,10))) {
                         // Simulate taking some time to do the remote method
-                        window.setTimeout( function() {
-                            this.onAfter.call(null, true, this);
-                        }, parseInt(this.methodName, 10));
+                        window.setTimeout( function(remoteMethod:B.RemoteMethod) {
+                            remoteMethod.onAfter.call(null, true, remoteMethod);
+                        }, parseInt(this.methodName, 10), this);
+                        return;
+                    } else {
+                        this.onAfter(true, this);
                         return;
                     }
                 } else {

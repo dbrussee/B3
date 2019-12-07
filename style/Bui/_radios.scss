@@ -31,12 +31,14 @@
 .tog { /* CHECKBOX OVERWRITE STYLES */
     @mixin disp {
         border: 1px solid $input-border;
-        background: transparent;
+        //background: transparent;
+        background: darkred;
         box-shadow: 0;
     }
     @mixin dispC {
         border: 1px solid transparent;
-        background: $input-checked;
+        //background: $input-checked;
+        background: mediumseagreen;
         box-shadow: 0;
     }
     @mixin dispD {

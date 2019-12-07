@@ -4,8 +4,8 @@
     border: 1px solid black;
     border-radius: .3em;
     box-shadow: 
-    .25em .25em .25em gray,
-    0 0 2em 1em gainsboro;
+        .25em .25em .25em gray,
+        0 0 2em 1em gainsboro;
     position: absolute;
     background-color: white;
     div.titlebar {
@@ -65,6 +65,7 @@ select {
 }
 input:not([type]), 
 textarea,
+input[type="password"],
 input[type="text"] {
     padding-left: .2em;
     padding-top: .15em;
@@ -79,10 +80,14 @@ input[type="text"] {
         background-color: snow;
     }
     &.required {
-        background-image: linear-gradient(45deg, transparent, transparent 50%, red 50%, red 100%);
+        /*background-image: linear-gradient(45deg, transparent, transparent 50%, rgb(82, 82, 82) 50%, rgb(82, 82, 82) 100%);*/
+        background-image: linear-gradient(45deg, transparent, transparent 50%, blue 50%, blue 100%);
         background-position: top right;
         background-size: .6em .6em;
         background-repeat: no-repeat;
+    }
+    &.readonly {
+        background-color: transparent;
     }
 }
 textarea {
@@ -129,6 +134,15 @@ input[type="reset"],
     }
     &.warning {
         background-image: $buttonGradientWarning;
+    }
+    &.inline {
+        font-size: .8em;
+        padding: {
+            left: .3em;
+            right: .3em;
+            top: .05em;
+            bottom: .15em;
+        }
     }
 }
 table.data {
@@ -241,6 +255,43 @@ table.form {
         }
     }
 }
+
+.BDropdownMenu {
+    position: absolute; 
+    display:none; 
+    top:0; left:0; 
+    border: 1px solic black; 
+    box-shadow: 2px 2px 3px silver;
+    background-image: $popupGradient;
+}
+.BPopupMenuSpace {
+    padding-top: .2em;
+    margin-bottom: .1em;
+    background-color: silver;
+    font-size: .6em;
+}
+.BPopupMenuItem {
+    border-bottom: 1px dotted black;
+    padding-top: .2em;
+    padding-bottom: .2em;
+    cursor: pointer;
+    /*background-color: rgba(0, 0, 0, .6);*/
+    font-size: .9em;
+    color: white;
+    &:hover {
+        background-color: rgba(0,0,0,.9);
+        color: $bcnc-pickedBackground;
+    }
+    div.ICON {
+        display: table-cell;
+        width: 25px;
+        text-align: center;
+        vertical-align: top;
+        padding-top: .15em;
+        font-size: 1.1em;
+    }
+}
+
 
 ::placeholder {
     color: lightblue;

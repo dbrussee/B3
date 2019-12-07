@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../../style/Bui/Bui.css">
+<link rel="stylesheet" type="text/css" href="../../style/bcnc.css">
+<script src='../../js/B.js'></script>
+<style>
+.math {
+    width: 3em; 
+    text-align:right; 
+    border: 0 !important
+}
+</style>
+<script>
+function init() {
+    window.tblStats = new B.Table("tblStats", "tblStats", "stat,statdate,link", "status","statuses");
+    tblStats.setTableHeight(250);
+    tblStats.preRowRender = function(rownum,tr,tds,rd) {
+        if (rd.link == "") {
+            tds.link.innerHTML = "cancel";
+        } else {
+            tds.link.innerHTML = "<i class='material-icons'>link</i>";
+        }
+    }
+
+    tblStats.ondblclick = notcoded;
+    tblStats.footer.addButton("add", "Add", notcoded, false);
+    loadRows();
+
+    window.drop = new B.DropdownMenu("mnuDrop", "nav", null, "<b>REVA Log Return</b>", 200);
+    drop.popup.addItem("home", function() { top.loadPage("reva/reva_home.html") }, "autorenew", "REVA Home");
+}
+function loadRows() {
+    tblStats.addRow("Eligible", "2/19/2018", "beef");
+    tblStats.addRow("Missing", "2/10/2018", "beef");
+    tblStats.addRow("1st Letter", "2/1/2018", "beef");
+}
+</script>
+</head>
+<body onload='init()' style='padding:.4rem; padding-top:0'>
+    <div style='background-color:gainsboro'>
+        <span id='mnuDrop'></span>
+        &nbsp;&nbsp;<span><b>J STEPHEN HOARD IV DDS</b>&nbsp;&nbsp;Prospect: 23456, PMHS: 051824, Facets: 10002001</span>
+    </div>
+    <form id='frmData' onsubmit='event.preventDefault(); return false;'>
+    <div style='width:1000px' class='centerme'>
+        <table class='form'>
+            <tr><td style='padding-right: 2em;'>
+                    <div style='color:navy'>Group Renewal: Feb, 2020</div>
+                    <div style='padding:.4em;'>
+                    1421A SOUTH GLENBURNIE RD<br>
+                    NEW BERN, NC&nbsp;&nbsp;20562</div>
+                    &bull;&nbsp;Contact: J STEPHEN HOARD<br>
+                    &bull;&nbsp;Ph: (252) 633-0800<br>
+                    <br>
+                    Group Type: Producer<br>
+                    Region: Durham / East<br>
+                    Segment: 1-5, GF: NGF
+                    </td>
+                <td>
+                    <div style='color:navy'>Producer:</div>
+                    <div style='padding:.4em;'>
+                    ALAN B. OVERBEY (P0037911)</div>
+                    &bull;&nbsp;Ph: (336) 510-5414<br>
+                    &bull;&nbsp;Fax: (336) 335-1100<br>
+                    &bull;&nbsp;Email: alan.overbey@banyaninc.com<br>
+                    &bull;&nbsp;Mgr: SERITA FAISON
+                    <br><br>
+                    <table class='form'>
+                        <tr><th>Empl in NC > 50%:</th>
+                            <td><select name='own50'>
+                                <option value='' selected>Unknown</option>
+                                <option value='Y'>Yes</option>
+                                <option value='N'>No</option>
+                            </select></td></tr>
+                        <tr><th>Ownership Type:</th>
+                            <td><select name='ownership' style='width:11em'></select></td></tr>
+                    </table>
+                </td>
+                <td style='padding-left: 2em'>
+                    <table class='form'>
+                        <tr><th>Total Emps:</th><td style='width:4.9em; text-align:right'><input class='math' name='totemps' value='25'></td></tr>
+                        <tr><th>Full-Time Equiv:</th><td style='border-bottom:2px solid black; text-align:right'><input class='math' name='ftes' value='25'></td></tr>
+                        <tr><th>Eligible Emps:</th><td style='text-align:right;'><input class='math' name='elig' value='25'></td></tr>
+                        <tr><th>Valid Waivers:</th><td style='text-align:right;'>-<input class='math' name='waivers' value='10'></td></tr>
+                        <tr><th>Probationary:</th><td style='border-bottom:1px solid black; text-align:right;'>-<input class='math' name='prob' value='2'></td></tr>
+                        <tr><th>Net Eligible:</th><td style='text-align:right;'>=<input readonly class='math readonly' name='netelig' value='13'></td></tr>
+                        <tr><th>Enroll / Apply:</th><td style='border-bottom:1px solid black; text-align:right;'>-<input class='math' name='enrapl' value='11'></td></tr>
+                        <tr><th>Not Covered:</th><td style='border-bottom:2px solid black; text-align:right;'>=<input readonly class='math readonly' name='notcov' value='2'></td></tr>
+                        <tr><th>Needed (0%):</th><td style='text-align:right;'><input class='math' name='needed' value='0'></td></tr>
+                        <tr><th>Common FTEs:</th><td style='text-align:right;'><input class='math' name='comfte' value=''></td></tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style='width:1000px' class='centerme'>
+        <table style='width:100%'>
+            <tr>
+                <td style='width:350px; vertical-align:top'>
+                    <table id='tblStats'>
+                        <tr><th data='stat,150'>Status</th>
+                            <th data='statdate,110'>Date</th>
+                            <th data='link,40,C'></th>
+                        </tr>
+                    </table>            
+                </td>
+                <td style='vertical-align:top'>
+                    <span style='color:navy'>Comments:</span>
+                    <br><textarea name='taComments' style='width:100%; height: 3em;'></textarea>
+                    <span style='color:navy'>Term:</span>
+                        <label class='chk'><input type='checkbox' name='termLate'><i></i> Late Submit</label>
+                        <label class='chk'><input type='checkbox' name='termSole'><i></i> Sole Proprietor</label>
+                    <br><textarea name='taTerm' style='width:100%; height: 3em;'></textarea>
+                    <span style='color:navy'>Missing Items Requested:</span>
+                        <select name='missList' style='width:20em'></select>
+                    <br><textarea name='taMissing' style='width:100%; height: 8em;'></textarea>
+                </td>
+            </tr>
+        </table>
+    </div>
+    </form>
+
+</body>
+</html>
