@@ -100,7 +100,6 @@ namespace B {
                 document.body.appendChild(B.Dialog.overlay);
                 B.Dialog.overlay.style.cssText = 
                     "position: absolute; " +
-                    //"cursor: pointer; " +
                     "display: none; " +/* Hidden by default */
                     "width: 100%; height:100%; " +/* Full width (cover the whole page) */
                     "top: 0; left: 0; right: 0; bottom: 0; " +
@@ -133,7 +132,7 @@ namespace B {
         center() {
             let rect = this.domObj.getBoundingClientRect();
             this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
-            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - .5em)";
+            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px)";
             return this;
         }
         open(center?:boolean):B.Dialog {

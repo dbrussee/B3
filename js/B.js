@@ -604,7 +604,6 @@ var B;
                 document.body.appendChild(B.Dialog.overlay);
                 B.Dialog.overlay.style.cssText =
                     "position: absolute; " +
-                        //"cursor: pointer; " +
                         "display: none; " + /* Hidden by default */
                         "width: 100%; height:100%; " + /* Full width (cover the whole page) */
                         "top: 0; left: 0; right: 0; bottom: 0; " +
@@ -638,7 +637,7 @@ var B;
         Dialog.prototype.center = function () {
             var rect = this.domObj.getBoundingClientRect();
             this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
-            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - .5em)";
+            this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px)";
             return this;
         };
         Dialog.prototype.open = function (center) {
@@ -1543,6 +1542,8 @@ var B;
             this.rowWatcher = null;
             this.dataset = null;
             this.pickedRow = null;
+            this.pickedCell = null;
+            this.pickStyle = "ROW"; // ROW, CELL or ROWCELL
             this.thead = null;
             this.tbody = null;
             this.tfoot = null;
@@ -1634,7 +1635,7 @@ var B;
                 this.thead.appendChild(tr_1);
             }
             this.table.setAttribute("data-BTABLE", this.id);
-            if ("IntersectionObserver" in window) {
+            if ("IntersectionObserverXXX" in window) {
                 this.rowWatcher = new IntersectionObserver(function (entries, observer) {
                     for (var i = 0; i < entries.length; i++) {
                         var entry = entries[i];
@@ -1808,14 +1809,20 @@ var B;
             if (curtr == null) {
                 changed = true;
             }
-            else if (curtr != tr) {
-                changed = true;
-                if (curtr.className == "pickedRow") {
-                    curtr.className = "";
-                }
+            else if (curtr == tr) { // Picked same row... maybe different cell?
+                if (this.pickedCell != null)
+                    curtr.cells[this.pickedCell].className = "";
             }
-            if (tr.className != "pickedRow")
-                tr.className = "pickedRow";
+            else { // Picked different row
+                if (this.pickedCell != null)
+                    curtr.cells[this.pickedCell].className = "";
+                if (curtr.className == "pickedRow")
+                    curtr.className = "";
+            }
+            if (this.pickStyle == "ROW" || this.pickStyle == "ROWCELL") {
+                if (tr.className != "pickedRow")
+                    tr.className = "pickedRow";
+            }
             this.pickedRow = rownum;
             // Handle tracked footer buttons
             this.handleTrackedButtons();
@@ -1823,6 +1830,11 @@ var B;
             var cells = this.makeCellsCollection(tr);
             if (td == undefined)
                 td = tr.cells[0];
+            this.pickedCell = td.cellIndex;
+            if (this.pickStyle == "CELL")
+                td.className = "pickedRow";
+            if (this.pickStyle == "ROWCELL")
+                td.className = "pickedCell";
             if (this.onclick != null)
                 this.onclick.call(this, td, tr, rd, cells, changed);
         };
@@ -2080,7 +2092,7 @@ var B;
             }
             this.dataset.rows.push(rowData);
             var tr = this.preloadRowToTable(this.dataset.rows.length - 1);
-            if ("IntersectionObserver" in window) {
+            if ("IntersectionObserverXXX" in window) {
                 this.rowWatcher.observe(tr);
             }
             else {

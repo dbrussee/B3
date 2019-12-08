@@ -124,7 +124,7 @@ function editProspect(frm, kind) {
     </table>
 
     <form class='BDialog' id='dlgProsp' style='height:550px; width:700px;' title='Prospect Details'>
-        <table class='form centerme'>
+        <table class='form centerme' style='margin-top:.5em'>
             <tr><th>Tax ID (EIN):</th><td><input name='eina' class='required' size='3'> &ndash; <input name='einb' class='required' size='10'></td></tr>
             <tr><th>Group Name:</th><td><input name='grpnam' class='required' size='50'></td></tr>
             <tr><th>Address:</th><td><input name='addr1' class='required' size='50'><td></td></tr>
@@ -136,7 +136,8 @@ function editProspect(frm, kind) {
                 <td></td></tr>
             <tr><th>Contact:</th><td><input name='contact' size='50'></td></tr>
             <tr><th>Email:</th><td><input name='email' size='50'></td></tr>
-            <tr><th></th><td>Ph: <input name='phone' size='15'> Fax: <input name='fax' size='15'></td></tr>
+            <tr><th></th><td style='color:navy'>Ph: <input name='phone' size='15'> x<input name='pext' size='5'>
+                    Fax: <input name='fax' size='15'></td></tr>
             <tr><th>Employees:</th><td><input name='empcount' size='5' class='required'></td></tr>
             <tr><th>NAICS:</th><td><input name='naics' disabled class='required' size='10'> <button class='inline' onclick='pickNAICS()'>Pick...</button></td></tr>
             <tr><td colspan='2' style='padding-top: .6em;'>

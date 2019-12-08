@@ -45,6 +45,9 @@
   border: 1px solid #c2bebe;
 }
 
+.tog {
+  /* CHECKBOX OVERWRITE STYLES */
+}
 
 .tog > i {
   display: inline-block;
@@ -572,7 +575,7 @@ table.form tr td input:not([type]),
 table.form tr td input[type="text"] {
   border: 0;
   border-bottom: 1px solid dimgray;
-  margin-bottom: .25em;
+  /*margin-bottom: .25em;*/
 }
 
 table.form tr td.instructions {
@@ -681,8 +684,13 @@ table.BTable tr th.th {
   text-shadow: 1px 1px 1px black;
 }
 
-table.BTable tbody tr.pickedRow {
+table.BTable tbody tr.pickedRow,
+table.BTable tbody tr td.pickedRow {
   background-color: #d0ecf5;
+}
+
+table.BTable tbody tr td.pickedCell {
+  background-color: pink;
 }
 
 table.BTable tbody tr td {

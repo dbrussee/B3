@@ -49,6 +49,8 @@ namespace B {
         private rowWatcher = null;
         public dataset = null;
         public pickedRow:number = null;
+        public pickedCell:number = null;
+        public pickStyle:string = "ROW"; // ROW, CELL or ROWCELL
         private thead = null;
         private tbody = null;
         private tfoot = null;
@@ -151,7 +153,7 @@ namespace B {
                 this.thead.appendChild(tr);
             }        
             this.table.setAttribute("data-BTABLE", this.id);
-            if ("IntersectionObserver" in window) {
+            if ("IntersectionObserverXXX" in window) {
                     this.rowWatcher = new IntersectionObserver(function(entries, observer) {
                     for (let i = 0; i < entries.length; i++) {
                         let entry = entries[i];
@@ -309,19 +311,24 @@ namespace B {
             let changed = false;
             if (curtr == null) {
                 changed = true;
-            } else if (curtr != tr) {
-                changed = true;
-                if (curtr.className == "pickedRow") {
-                    curtr.className = "";
-                }
+            } else if (curtr == tr) { // Picked same row... maybe different cell?
+                if (this.pickedCell != null) curtr.cells[this.pickedCell].className = "";
+            } else { // Picked different row
+                if (this.pickedCell != null) curtr.cells[this.pickedCell].className = "";
+                if (curtr.className == "pickedRow") curtr.className = "";
             }
-            if (tr.className != "pickedRow") tr.className = "pickedRow";
+            if (this.pickStyle == "ROW" || this.pickStyle == "ROWCELL") {
+                if (tr.className != "pickedRow") tr.className = "pickedRow";
+            }
             this.pickedRow = rownum;
             // Handle tracked footer buttons
             this.handleTrackedButtons();
             // Do user click action (if any)
             let cells = this.makeCellsCollection(tr);
             if (td == undefined) td = tr.cells[0];
+            this.pickedCell = td.cellIndex;
+            if (this.pickStyle == "CELL") td.className = "pickedRow";
+            if (this.pickStyle == "ROWCELL") td.className = "pickedCell";
             if (this.onclick != null) this.onclick.call(this, td, tr, rd, cells, changed);
         }
 
@@ -549,7 +556,7 @@ namespace B {
             this.dataset.rows.push(rowData);
         
             let tr = this.preloadRowToTable(this.dataset.rows.length-1);
-            if ("IntersectionObserver" in window) { 
+            if ("IntersectionObserverXXX" in window) { 
                 this.rowWatcher.observe(tr); 
             } else {
                 this.renderRow(tr.rowIndex-1);

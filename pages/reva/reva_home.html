@@ -23,12 +23,12 @@ function init() {
     tblGroups.footer.addButton("output", "Output", notcoded, true).disable();
 
     window.drop = new B.DropdownMenu("mnuDrop", "nav", null, "<b>REVA Search / List</b>", 200);
-    drop.popup.addItem("home", function() { top.loadPage("bq_home.html") }, "home", "Blue Quote Home");
+    drop.popup.addItem("home", function() { top.loadPage("bq_home.html") }, "arrow_back", "BlueQuote Home");
 }
 var rpcSearch = new B.RemoteMethod(null, 1200, 
     function(rpc) {
         tblGroups.clear();
-        freeze("Searching for results...");
+        freeze("Searching...");
     }, function(isSuccess, rpc) {
         thaw();
         loadGroups();
@@ -68,15 +68,15 @@ function loadGroups() {
                 <tr>
                     <th>Sales Region:</th><td><select name='salesreg' style='width:15em'></select></td>
                     <th>Status Date:</th><td>
-                        <input name='statdateF' style='width:8em' placeholder='MM/DD/YYYY'> to
-                        <input name='statdateT' style='width:8em' placeholder='MM/DD/YYYY'>
+                        <input name='statdateF' style='width:8em' placeholder='M/D/YYYY'> to
+                        <input name='statdateT' style='width:8em' placeholder='M/D/YYYY'>
                     </td>
                 </tr>
                 <tr>
                     <th>Direct Region:</th><td><select name='dirreg' style='width:15em'></select></td>
                     <th>Sent Date:</th><td>
-                        <input name='sentdateF' style='width:8em' placeholder='MM/DD/YYYY'> to
-                        <input name='sentdateT' style='width:8em' placeholder='MM/DD/YYYY'>
+                        <input name='sentdateF' style='width:8em' placeholder='M/D/YYYY'> to
+                        <input name='sentdateT' style='width:8em' placeholder='M/D/YYYY'>
                     </td>
                 </tr>
                 <tr>

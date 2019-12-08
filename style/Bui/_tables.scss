@@ -8,10 +8,14 @@ table.BTable {
         padding: .25em;
         text-shadow: $tshadow1;
     }
+    tbody tr.pickedRow,
+    tbody tr td.pickedRow {
+        background-color: $bcnc-pickedBackground;
+    }
+    tbody tr td.pickedCell {
+        background-color: $bcnc-pickedCellBackground;
+    }
     tbody tr {
-        &.pickedRow {
-            background-color: $bcnc-pickedBackground;
-        }
         td {
             padding: {
                 left: .25em;

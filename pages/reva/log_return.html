@@ -21,21 +21,26 @@ function init() {
     window.tblStats = new B.Table("tblStats", "tblStats", "stat,statdate,link", "status","statuses");
     tblStats.setTableHeight(250);
     tblStats.preRowRender = function(rownum,tr,tds,rd) {
-        if (rd.link == "") {
-            tds.link.innerHTML = "cancel";
-        } else {
-            tds.link.innerHTML = "<i class='material-icons'>link</i>";
-        }
+        tds.link.className = "";
+        var icon = (rd.link == "") ? "edit" : "link";
+        var styl = (rd.link == "") ? "color:red;" : "";
+        var h = "<span class='material-icons anchor' onclick=\"";
+        h += "say('" + rd.stat + "')\" ";
+        h += "style='" + styl + "font-size:14pt'>" + icon + "</span>";
+        tds.link.innerHTML =  h;
     }
 
     tblStats.ondblclick = notcoded;
-    tblStats.footer.addButton("add", "Add", notcoded, false);
+    tblStats.footer.addButton("add", "Add", function() { openDialog("dlgNewStatus"); }, false);
     loadRows();
 
     window.drop = new B.DropdownMenu("mnuDrop", "nav", null, "<b>REVA Log Return</b>", 200);
-    drop.popup.addItem("home", function() { top.loadPage("reva/reva_home.html") }, "autorenew", "REVA Home");
+    drop.popup.addItem("rhome", function() { top.loadPage("reva/reva_home.html") }, "arrow_back", "REVA Home");
+    drop.popup.addSpace();
+    drop.popup.addItem("home", function() { top.loadPage("bq_home.html") }, "home", "BlueQuote Home");
 }
 function loadRows() {
+    tblStats.addRow("Bogus", "2/21/2018", "");
     tblStats.addRow("Eligible", "2/19/2018", "beef");
     tblStats.addRow("Missing", "2/10/2018", "beef");
     tblStats.addRow("1st Letter", "2/1/2018", "beef");
@@ -51,7 +56,7 @@ function loadRows() {
     <div style='width:1000px' class='centerme'>
         <table class='form'>
             <tr><td style='padding-right: 2em;'>
-                    <div style='color:navy'>Group Renewal: Feb, 2020</div>
+                    <div style='color:navy'>Group Renewal: <b>Feb, 2020</b></div>
                     <div style='padding:.4em;'>
                     1421A SOUTH GLENBURNIE RD<br>
                     NEW BERN, NC&nbsp;&nbsp;20562</div>
@@ -103,6 +108,7 @@ function loadRows() {
         <table style='width:100%'>
             <tr>
                 <td style='width:350px; vertical-align:top'>
+                    <span style='color:navy'>Status History: </span>
                     <table id='tblStats'>
                         <tr><th data='stat,150'>Status</th>
                             <th data='statdate,110'>Date</th>
@@ -111,20 +117,45 @@ function loadRows() {
                     </table>            
                 </td>
                 <td style='vertical-align:top'>
-                    <span style='color:navy'>Comments:</span>
-                    <br><textarea name='taComments' style='width:100%; height: 3em;'></textarea>
+                    <span style='color:navy'>BCNC internal notes: </span>
+                    <br><textarea name='taComments' style='width:100%; height: 17em;'></textarea>
+                    <!--
                     <span style='color:navy'>Term:</span>
                         <label class='chk'><input type='checkbox' name='termLate'><i></i> Late Submit</label>
                         <label class='chk'><input type='checkbox' name='termSole'><i></i> Sole Proprietor</label>
                     <br><textarea name='taTerm' style='width:100%; height: 3em;'></textarea>
-                    <span style='color:navy'>Missing Items Requested:</span>
+                    <span style='color:navy'>Missing items requested:</span>
                         <select name='missList' style='width:20em'></select>
                     <br><textarea name='taMissing' style='width:100%; height: 8em;'></textarea>
+                    -->
                 </td>
             </tr>
         </table>
     </div>
     </form>
-
+<form class='BDialog' id='dlgNewStatus' style='height:300px; width: 400px' title='New REVA Status'>
+    <div>
+        <ul>
+            <li onclick='notcoded()'>Missing</li> 
+            <li onclick='popDialog(); openDialog("dlgTerm");'>Terminating</li> 
+            <li onclick='notcoded()'>Accept</li> 
+            <li onclick='notcoded()'>Unaccept</li> 
+        </ul>
+    </div>
+    <button class='BDialogButton' onclick='popDialog()'>Cancel</button>
+</form>
+<form class='BDialog' id='dlgTerm' style='height:350px; width:700px' title='Group Termination Status'>
+    <table class='form' style='width:650px'>
+        <tr><th>Termination Reason:</th><td>
+            <label class='chk'><input type='checkbox' name='termLate'><i></i> Late Submit</label>
+            <label class='chk'><input type='checkbox' name='termSole'><i></i> Sole Proprietor</label>
+        </td></tr>
+        <tr><th>Explanation:</th><td>&nbsp;</td></tr>
+        <tr><td colspan='2'>
+            <textarea name='taTerm' style='width:100%; height: 10em;'></textarea>
+        </td></tr>
+    </table>
+    <button class='BDialogButton' onclick='popDialog()'>Cancel</button>
+</form>
 </body>
 </html>
