@@ -18,8 +18,8 @@ function init() {
         if (rd.stat == "Missing") { tds.stat.style.color = "red"; tds.stat.style.backgroundColor = "yellow"; }
     }
 
-    tblGroups.ondblclick = function() { top.loadPage("reva/log_return.html") };
-    tblGroups.footer.addButton("log", "Log Return", function() { top.loadPage("reva/log_return.html") }, true).disable();
+    tblGroups.ondblclick = function() { top.loadPage("reva/log_return.html", tblGroups.getDataRow().grpnum) };
+    tblGroups.footer.addButton("log", "Log Return", function() { top.loadPage("reva/log_return.html", tblGroups.getDataRow().grpnum) }, true).disable();
     tblGroups.footer.addButton("output", "Output", notcoded, true).disable();
 
     window.drop = new B.DropdownMenu("mnuDrop", "nav", null, "<b>REVA Search / List</b>", 200);

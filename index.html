@@ -9,19 +9,38 @@
     <link rel="stylesheet" type="text/css" href="./style/bcnc.css">
 
     <script>
+    var iFrameCollection = {}
+    var currentFrame = null;
     function init() {
         loadPage("bq_home.html");
     }
-    function loadPage(page) {
-        var iframe = document.createElement("iframe");
-        iframe.style.cssText = "width:100vw;" +
-            "height:calc(100vh - 100px);" +
-            "border:0; margin:0; padding:0;";
-        var div = document.getElementById("body");
-        div.innerHTML = "";
-        //while (div.hasChildNodes) div.removeChild(div.childNodes[0]);
-        div.appendChild(iframe);
-        iframe.src = "pages/" + page;
+    function loadPage(page, params, forceReload) {
+        if (params == undefined) params = "";
+        if (forceReload == undefined) forceReload = false;
+        var item = iFrameCollection[page];
+        if (item == undefined) {
+            var iframe = document.createElement("iframe");
+            iframe.style.cssText = "width:100vw;" +
+                "height:calc(100vh - 100px);" +
+                "border:0; margin:0; padding:0;";
+            iframe.src = "pages/" + page + (params == "" ? "" : "?" + params);
+            item = {iframe:iframe, params:params};
+            iFrameCollection[page] = item;
+            var div = document.getElementById("body");
+            div.appendChild(iframe);
+        } else {
+            var reload = forceReload;
+            if (item.params != params) reload = true;
+            if (reload) {
+                item.params = params;
+                item.iframe.src = "pages/" + page + (params == "" ? "" : "?" + params);
+            }
+        }
+        if (currentFrame != null && currentFrame != item.iframe) {
+            currentFrame.style.display = "none";
+        }
+        item.iframe.style.display = "block";
+        currentFrame = item.iframe;
     }
     </script>
 </head>
