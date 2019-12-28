@@ -156,9 +156,6 @@ namespace B {
                 if (this.isFirstOpen) center = true;
             }
             if (center) {
-                // Calculate positioning
-                //this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
-                //this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
                 this.center();
             }
             this.isFirstOpen = false;
@@ -166,6 +163,9 @@ namespace B {
             B.Dialog.dialogStack.push(this.id);
             return this;
         }
+        good() { this.domObj.style.backgroundColor = "aquamarine"; return this; }
+        warning() { this.domObj.style.backgroundColor = "lightyellow"; return this; }
+        error() { this.domObj.style.backgroundColor = "lightpink"; return this; }
         close():B.Dialog {
             if (!this.isOpen) return;
             this.isOpen = false;
@@ -362,15 +362,7 @@ function say(msg:string, title:string="System Message", onclose:CallableFunction
     dlg.open().center();
     return dlg;
 }
-function sayG(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
-    return say(msg, title, onclose, "aquamarine");
-}
-function sayW(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
-    return say(msg, title, onclose, "lightyellow");
-}
-function sayE(msg:string, title:string="System Message", onclose:CallableFunction=function() {}) {
-    return say(msg, title, onclose, "lightpink");
-}
+
 function sayGet(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, inputAsTextarea:boolean=false, allowTabs:boolean=false, bgcolor:string="") {
     let dlg = B.Dialog.getSay();
     let h = msg;
@@ -405,15 +397,6 @@ function sayGet(msg:string, prompt:string, defaultValue:string, title:string="Sy
     dlg.open().center();
     return dlg;
 }
-function sayGetG(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, inputAsTextarea:boolean=false, allowTabs:boolean=false) {
-    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "aquamarine");
-}
-function sayGetW(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, inputAsTextarea:boolean=false, allowTabs:boolean=false) {
-    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "lightyellow");
-}
-function sayGetE(msg:string, prompt:string, defaultValue:string, title:string="System Message", callback:CallableFunction, inputAsTextarea:boolean=false, allowTabs:boolean=false) {
-    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "lightpink");
-}
 
 function choose(msg:string, title:string="System Message", buttons:string, callback:CallableFunction, bgcolor:string="") {
     let dlg = B.Dialog.getSay();
@@ -430,24 +413,7 @@ function choose(msg:string, title:string="System Message", buttons:string, callb
     dlg.open().center();
     return dlg;
 }
-function chooseG(msg:string, title:string="System Message", buttons:string, callback:CallableFunction) {
-    return choose(msg, title, buttons, callback, "aquamarine");
-}
-function chooseW(msg:string, title:string="System Message", buttons:string, callback:CallableFunction) {
-    return choose(msg, title, buttons, callback, "lightyellow");
-}
-function chooseE(msg:string, title:string="System Message", buttons:string, callback:CallableFunction) {
-    return choose(msg, title, buttons, callback, "lightpink");
-}
+
 function ask(msg:string, title:string="System Message", callback:CallableFunction) {
     return choose(msg, title, "Yes=YES|No=NO", callback, "");
-}
-function askG(msg:string, title:string="System Message", callback:CallableFunction) {
-    return choose(msg, title, "Yes=YES|No=NO", callback, "aquamarine");
-}
-function askW(msg:string, title:string="System Message", callback:CallableFunction) {
-    return choose(msg, title, "Yes=YES|No=NO", callback, "lightyellow");
-}
-function askE(msg:string, title:string="System Message", callback:CallableFunction) {
-    return choose(msg, title, "Yes=YES|No=NO", callback, "lightpink");
 }

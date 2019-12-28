@@ -76,15 +76,17 @@ input[type="text"] {
         right: 0;
     }
     &:disabled {
-        color: gray;
-        background-color: snow;
+        color: black;
+        background-color: lightgrey;
     }
-    &.required {
+    &:required {
+        &:invalid {
         /*background-image: linear-gradient(45deg, transparent, transparent 50%, rgb(82, 82, 82) 50%, rgb(82, 82, 82) 100%);*/
-        background-image: linear-gradient(45deg, transparent, transparent 50%, blue 50%, blue 100%);
+        background-image: linear-gradient(45deg, transparent, transparent 50%, orange 50%, red 100%);
         background-position: top right;
         background-size: .6em .6em;
         background-repeat: no-repeat;
+        }
     }
     &.readonly {
         background-color: transparent;
@@ -137,12 +139,21 @@ input[type="reset"],
     }
     &.inline {
         font-size: .8em;
+        position: relative;
+        top: -.2em;
         padding: {
             left: .3em;
             right: .3em;
             top: .05em;
             bottom: .15em;
         }
+    }
+    &.icon {
+        line-height: 1em;
+        i {
+            font-size: 2em;
+        }
+        &:hover i { text-shadow: 0 0 .2em white; }
     }
 }
 table.data {

@@ -3,7 +3,7 @@ namespace B {
 }
 function notcoded() {
     let h = "Sorry, this feature is not ready yet.";
-    sayE(h);
+    say(h).error();
 }
 namespace B.is {
     export function oneOf() {

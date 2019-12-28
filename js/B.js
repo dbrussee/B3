@@ -4,7 +4,7 @@ var B;
 })(B || (B = {}));
 function notcoded() {
     var h = "Sorry, this feature is not ready yet.";
-    sayE(h);
+    say(h).error();
 }
 (function (B) {
     var is;
@@ -665,9 +665,6 @@ var B;
                     center = true;
             }
             if (center) {
-                // Calculate positioning
-                //this.domObj.style.left = "calc(50vw - " + (rect.width / 2).toString() + "px)";
-                //this.domObj.style.top = "calc(50vh - " + (rect.height / 2).toString() + "px - 3em)";
                 this.center();
             }
             this.isFirstOpen = false;
@@ -675,6 +672,9 @@ var B;
             B.Dialog.dialogStack.push(this.id);
             return this;
         };
+        Dialog.prototype.good = function () { this.domObj.style.backgroundColor = "aquamarine"; return this; };
+        Dialog.prototype.warning = function () { this.domObj.style.backgroundColor = "lightyellow"; return this; };
+        Dialog.prototype.error = function () { this.domObj.style.backgroundColor = "lightpink"; return this; };
         Dialog.prototype.close = function () {
             if (!this.isOpen)
                 return;
@@ -898,21 +898,6 @@ function say(msg, title, onclose, bgcolor) {
     dlg.open().center();
     return dlg;
 }
-function sayG(msg, title, onclose) {
-    if (title === void 0) { title = "System Message"; }
-    if (onclose === void 0) { onclose = function () { }; }
-    return say(msg, title, onclose, "aquamarine");
-}
-function sayW(msg, title, onclose) {
-    if (title === void 0) { title = "System Message"; }
-    if (onclose === void 0) { onclose = function () { }; }
-    return say(msg, title, onclose, "lightyellow");
-}
-function sayE(msg, title, onclose) {
-    if (title === void 0) { title = "System Message"; }
-    if (onclose === void 0) { onclose = function () { }; }
-    return say(msg, title, onclose, "lightpink");
-}
 function sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, bgcolor) {
     if (title === void 0) { title = "System Message"; }
     if (inputAsTextarea === void 0) { inputAsTextarea = false; }
@@ -952,24 +937,6 @@ function sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, all
     dlg.open().center();
     return dlg;
 }
-function sayGetG(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs) {
-    if (title === void 0) { title = "System Message"; }
-    if (inputAsTextarea === void 0) { inputAsTextarea = false; }
-    if (allowTabs === void 0) { allowTabs = false; }
-    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "aquamarine");
-}
-function sayGetW(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs) {
-    if (title === void 0) { title = "System Message"; }
-    if (inputAsTextarea === void 0) { inputAsTextarea = false; }
-    if (allowTabs === void 0) { allowTabs = false; }
-    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "lightyellow");
-}
-function sayGetE(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs) {
-    if (title === void 0) { title = "System Message"; }
-    if (inputAsTextarea === void 0) { inputAsTextarea = false; }
-    if (allowTabs === void 0) { allowTabs = false; }
-    return sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, allowTabs, "lightpink");
-}
 function choose(msg, title, buttons, callback, bgcolor) {
     if (title === void 0) { title = "System Message"; }
     if (bgcolor === void 0) { bgcolor = ""; }
@@ -987,33 +954,9 @@ function choose(msg, title, buttons, callback, bgcolor) {
     dlg.open().center();
     return dlg;
 }
-function chooseG(msg, title, buttons, callback) {
-    if (title === void 0) { title = "System Message"; }
-    return choose(msg, title, buttons, callback, "aquamarine");
-}
-function chooseW(msg, title, buttons, callback) {
-    if (title === void 0) { title = "System Message"; }
-    return choose(msg, title, buttons, callback, "lightyellow");
-}
-function chooseE(msg, title, buttons, callback) {
-    if (title === void 0) { title = "System Message"; }
-    return choose(msg, title, buttons, callback, "lightpink");
-}
 function ask(msg, title, callback) {
     if (title === void 0) { title = "System Message"; }
     return choose(msg, title, "Yes=YES|No=NO", callback, "");
-}
-function askG(msg, title, callback) {
-    if (title === void 0) { title = "System Message"; }
-    return choose(msg, title, "Yes=YES|No=NO", callback, "aquamarine");
-}
-function askW(msg, title, callback) {
-    if (title === void 0) { title = "System Message"; }
-    return choose(msg, title, "Yes=YES|No=NO", callback, "lightyellow");
-}
-function askE(msg, title, callback) {
-    if (title === void 0) { title = "System Message"; }
-    return choose(msg, title, "Yes=YES|No=NO", callback, "lightpink");
 }
 /// <reference path="B.ts" />
 var B;
@@ -1635,7 +1578,7 @@ var B;
                 this.thead.appendChild(tr_1);
             }
             this.table.setAttribute("data-BTABLE", this.id);
-            if ("IntersectionObserverXXX" in window) {
+            if ("IntersectionObserver" in window) {
                 this.rowWatcher = new IntersectionObserver(function (entries, observer) {
                     for (var i = 0; i < entries.length; i++) {
                         var entry = entries[i];
@@ -1694,7 +1637,7 @@ var B;
             table.style.cssText = "width: 100%; height:100%";
             var tr = table.insertRow(-1);
             this.footerButtonContainer = tr.insertCell(-1);
-            this.footerButtonContainer.style.cssText = "";
+            this.footerButtonContainer.style.cssText = "vertical-align:middle";
             this.footerMessageContainer = tr.insertCell(-1);
             this.footerMessageContainer.style.cssText = "text-align:right; width:30%; font-size:.8em;";
             this.footerBox.appendChild(table);
@@ -1746,6 +1689,7 @@ var B;
                     };
                     var btn = document.createElement("button");
                     btn.className = "BTableFooterButton enabled inline";
+                    btn.style.cssText = "top: 0";
                     btn.setAttribute("data-BTABLE", this.tableObject.table.getAttribute("data-BTABLE"));
                     btn.setAttribute("data-BUTTONID", id);
                     btn.innerHTML = title;
@@ -2026,10 +1970,10 @@ var B;
             }
             if (!okToDelete)
                 return;
-            chooseW(msg, "Delete " + this.rowCountTitle, "Yes - Delete=YES|Cancel", function (rslt) {
+            choose(msg, "Delete " + this.rowCountTitle, "Yes - Delete=YES|No - Cancel=No", function (rslt) {
                 if (rslt == "YES")
                     btbl.saveRowDelete();
-            });
+            }).warning();
         };
         Table.prototype.saveRowDelete = function () {
             var rd = this.getDataRow();
@@ -2068,13 +2012,38 @@ var B;
             while (this.table.rows.length > 1)
                 this.table.deleteRow(1);
         };
-        Table.prototype.addRows = function (data) {
-            var rows = data.split("\n");
-            for (var i = 0; i < rows.length; i++) {
-                this.addRow(rows[i].split("\t"));
+        Table.prototype.addRowsJSON = function (list) {
+            for (var i = 0; i < list.length; i++) {
+                this.addRowJSON(list[i]);
             }
         };
+        Table.prototype.addRows = function (data) {
+            if (typeof data == "object") {
+                this.addRowsJSON(data);
+            }
+            else {
+                var rows = data.split("\n");
+                for (var i = 0; i < rows.length; i++) {
+                    this.addRow(rows[i].split("\t"));
+                }
+            }
+        };
+        Table.prototype.addRowJSON = function (json) {
+            this.dataset.rows.push(json);
+            var tr = this.preloadRowToTable(this.dataset.rows.length - 1);
+            if ("IntersectionObserver" in window) {
+                this.rowWatcher.observe(tr);
+            }
+            else {
+                this.renderRow(tr.rowIndex - 1);
+            }
+            this.setMessage();
+            return tr;
+        };
         Table.prototype.addRow = function (argumentList) {
+            if (arguments.length == 1 && typeof arguments[0] == "object") {
+                return this.addRowJSON(arguments[0]);
+            }
             var rowData = {};
             var args = arguments;
             if (arguments.length == 1 && arguments[0].constructor === Array)
@@ -2092,7 +2061,7 @@ var B;
             }
             this.dataset.rows.push(rowData);
             var tr = this.preloadRowToTable(this.dataset.rows.length - 1);
-            if ("IntersectionObserverXXX" in window) {
+            if ("IntersectionObserver" in window) {
                 this.rowWatcher.observe(tr);
             }
             else {

@@ -14,8 +14,9 @@ function init() {
     window.tblProsps = new B.Table("tblProspects", "tblProsps", "pid,gnam,qcnt", "prospect");
     tblProsps.pairWithForm("dlgProsp", "AED", editProspect, null);
     tblProsps.setTableHeight(200);
-    tblProsps.addRow("123456","Test Prospect",25);
-    tblProsps.addRow("8723933","Example Large Group",1);
+    tblProsps.addRows([
+        {pid:"123456",gnam:"Test Prospect",qcnt:25},
+        {pid:"8723933",qcnt:1,gnam:"Example Large Group"}]);
 
     window.tblMonths = new B.Table("tblMonths", "tblMonths", "effdat,quoted,rated,pending,enrolled");
     tblMonths.setTableHeight(160);
@@ -29,22 +30,24 @@ function init() {
     today.setDate(1);
     var m = today.getMonth() - 1;
     today.setMonth(m);
-    tblMonths.addRow(new Date(today.getTime()),"32","29","27","42");
+    var list = []
+    list.push({effdat:new Date(today.getTime()),quoted:32,rated:29,pending:27,enrolled:44});
     today.setMonth(++m);
-    tblMonths.addRow(new Date(today.getTime()),"20","12","0","23");
+    list.push({effdat:new Date(today.getTime()),quoted:20,rated:12,pending:0,enrolled:23});
     today.setMonth(++m);
-    tblMonths.addRow(new Date(today.getTime()),"5","1","11","1");
+    list.push({effdat:new Date(today.getTime()),quoted:5,rated:1,pending:11,enrolled:1});
     today.setMonth(++m);
-    tblMonths.addRow(new Date(today.getTime()),"1","0","1","0");
+    list.push({effdat:new Date(today.getTime()),quoted:1,rated:0,pending:1,enrolled:0});
     today.setMonth(++m);
-    tblMonths.addRow(new Date(today.getTime()),"1","0","1","0");
+    list.push({effdat:new Date(today.getTime()),quoted:1,rated:0,pending:1,enrolled:0});
     today.setMonth(++m);
-    tblMonths.addRow(new Date(today.getTime()),"1","0","1","0");
+    list.push({effdat:new Date(today.getTime()),quoted:1,rated:0,pending:1,enrolled:0});
     today.setMonth(++m);
-    tblMonths.addRow(new Date(today.getTime()),"1","0","1","0");
+    list.push({effdat:new Date(today.getTime()),quoted:1,rated:0,pending:1,enrolled:0});
+    tblMonths.addRows(list);
     tblMonths.pickRow(1);
     tblMonths.onclick = function(td, tr, rd, cells, changed) {
-        dropP.popup.items.itm2.disable(tr == null);
+        dropP.popup.items.itm2.disable(rd.enrolled == 0);
     }
 
     window.dropNav = new B.DropdownMenu("mnuDrop", "nav", null, "<b>BlueQuote Home</b>", 200);
@@ -53,7 +56,7 @@ function init() {
     drop.popup.addItem("edt", function() { say("You clicked Edit Profile menu item."); }, "edit", "Edit profile...");
     drop.popup.addItem("itm1", function() { say("You clicked menu item 1"); }, "email", "Send feedback...");
     drop.popup.addSpace();
-    drop.popup.addItem("itm2", function() { sayE("You cannot change your password from here"); }, "security", "Change Password...");
+    drop.popup.addItem("itm2", function() { say("You cannot change your password from here").error(); }, "security", "Change Password...");
     drop.popup.addItem("itm3", function() { say("Just close the window to log out."); }, "cancel", "Logout...");
     window.dropP = new B.DropdownMenu("mnuDrop", "mnu2", "business", "Prospect", 250);
     dropP.popup.addItem("srch", function() { searchProspect(); }, "search", "Search prospect...");
@@ -67,7 +70,7 @@ function init() {
     
 }
 function pickNAICS() {
-    sayE("Not coded yet");
+    say("Not coded yet").error();
 }
 function searchProspect() {
     var msg = "Search for ID, name, etc";
@@ -75,7 +78,7 @@ function searchProspect() {
     var deflt = "";
     var title = "Prospect Search"
     sayGet(msg, prompt, deflt, title, function(rslt) {
-        sayE("Sorry, Search has not been coded yet.<br>If it had, it would be searching for: '" + rslt + "'.");
+        say("Sorry, Search has not been coded yet.<br>If it had, it would be searching for: '" + rslt + "'.").error();
     })
 }
 function editProspect(frm, kind) {
@@ -125,21 +128,21 @@ function editProspect(frm, kind) {
 
     <form class='BDialog' id='dlgProsp' style='height:550px; width:700px;' title='Prospect Details'>
         <table class='form centerme' style='margin-top:.5em'>
-            <tr><th>Tax ID (EIN):</th><td><input name='eina' class='required' size='3'> &ndash; <input name='einb' class='required' size='10'></td></tr>
-            <tr><th>Group Name:</th><td><input name='grpnam' class='required' size='50'></td></tr>
-            <tr><th>Address:</th><td><input name='addr1' class='required' size='50'><td></td></tr>
+            <tr><th>Tax ID (EIN):</th><td><input name='eina' required maxlength="3" minlength="3" size='3'> &ndash; <input name='einb' required minlength="10" maxlength="3" size='10'></td></tr>
+            <tr><th>Group Name:</th><td><input name='grpnam' required size='50'></td></tr>
+            <tr><th>Address:</th><td><input name='addr1' required size='50'><td></td></tr>
             <tr><th></th><td><input name='addr2' size='50'><td></td></tr>
             <tr><th></th><td>
-                <input name='city' placeholder='City' class='required' size='30'>
-                <input name='state' placeholder='ST' class='required' size='3'>,
-                <input name='zip' placeholder='Zip' class='required' size='12'>
+                <input name='city' placeholder='City' required size='30'>
+                <input name='state' placeholder='ST' required size='3'>,
+                <input name='zip' placeholder='Zip' required size='12'>
                 <td></td></tr>
             <tr><th>Contact:</th><td><input name='contact' size='50'></td></tr>
             <tr><th>Email:</th><td><input name='email' size='50'></td></tr>
             <tr><th></th><td style='color:navy'>Ph: <input name='phone' size='15'> x<input name='pext' size='5'>
                     Fax: <input name='fax' size='15'></td></tr>
-            <tr><th>Employees:</th><td><input name='empcount' size='5' class='required'></td></tr>
-            <tr><th>NAICS:</th><td><input name='naics' disabled class='required' size='10'> <button class='inline' onclick='pickNAICS()'>Pick...</button></td></tr>
+            <tr><th>Employees:</th><td><input name='empcount' size='5' required></td></tr>
+            <tr><th>NAICS:</th><td><input name='naics' disabled required size='10' value='beef'> <button class='inline' onclick='pickNAICS()'>Pick...</button></td></tr>
             <tr><td colspan='2' style='padding-top: .6em;'>
                 <fieldset><legend>Other Information</legend>
                 <table class='form'>

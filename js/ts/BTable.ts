@@ -6,7 +6,7 @@ namespace B {
         public rows = [];
         constructor(colsList:string = "") {
             let list = colsList.split("\t");
-            if (list.length == 1 && list[0].indexOf(",") > -1)list=colsList.split(",");
+            if (list.length == 1 && list[0].indexOf(",") > -1) list=colsList.split(",");
             for (let itmnum = 0; itmnum < list.length; itmnum++) {
                 this.columnNames[list[itmnum]] = this.columns.length;
                 this.columns.push(list[itmnum]);
@@ -153,8 +153,8 @@ namespace B {
                 this.thead.appendChild(tr);
             }        
             this.table.setAttribute("data-BTABLE", this.id);
-            if ("IntersectionObserverXXX" in window) {
-                    this.rowWatcher = new IntersectionObserver(function(entries, observer) {
+            if ("IntersectionObserver" in window) {
+                this.rowWatcher = new IntersectionObserver(function(entries, observer) {
                     for (let i = 0; i < entries.length; i++) {
                         let entry = entries[i];
                         if (entry.isIntersecting) {
@@ -211,7 +211,7 @@ namespace B {
             table.style.cssText = "width: 100%; height:100%";
             let tr = table.insertRow(-1);
             this.footerButtonContainer = tr.insertCell(-1);
-            this.footerButtonContainer.style.cssText = "";
+            this.footerButtonContainer.style.cssText = "vertical-align:middle";
             this.footerMessageContainer = tr.insertCell(-1);
             this.footerMessageContainer.style.cssText = "text-align:right; width:30%; font-size:.8em;";
             this.footerBox.appendChild(table);
@@ -259,6 +259,7 @@ namespace B {
                     };
                     let btn = document.createElement("button");
                     btn.className = "BTableFooterButton enabled inline";
+                    btn.style.cssText = "top: 0";
                     btn.setAttribute("data-BTABLE", this.tableObject.table.getAttribute("data-BTABLE"));
                     btn.setAttribute("data-BUTTONID", id);
                     
@@ -496,9 +497,9 @@ namespace B {
                 if (okToDelete == undefined) okToDelete = true;
             }
             if (!okToDelete) return;
-            chooseW(msg, "Delete " + this.rowCountTitle, "Yes - Delete=YES|Cancel", function(rslt) {
+            choose(msg, "Delete " + this.rowCountTitle, "Yes - Delete=YES|No - Cancel=No", function(rslt) {
                 if (rslt == "YES") btbl.saveRowDelete();
-            });
+            }).warning();
         }
         saveRowDelete() {
             let rd = this.getDataRow(); if (rd == null) return;
@@ -533,13 +534,36 @@ namespace B {
             this.dataset.rows = [];
             while (this.table.rows.length > 1) this.table.deleteRow(1);
         }
-        addRows(data:string) {
-            let rows = data.split("\n");
-            for (let i = 0; i < rows.length; i++) {
-                this.addRow(rows[i].split("\t"));
+        addRowsJSON(list:JSON[]) {
+            for (let i = 0; i < list.length; i++) {
+                this.addRowJSON(list[i]);
             }
         }
+        addRows(data:string|JSON[]) {
+            if (typeof data == "object") {
+                this.addRowsJSON(data);
+            } else {
+                let rows = data.split("\n");
+                for (let i = 0; i < rows.length; i++) {
+                    this.addRow(rows[i].split("\t"));
+                }
+            }
+        }
+        addRowJSON(json:JSON) {
+            this.dataset.rows.push(json);
+            let tr = this.preloadRowToTable(this.dataset.rows.length-1);
+            if ("IntersectionObserver" in window) { 
+                this.rowWatcher.observe(tr); 
+            } else {
+                this.renderRow(tr.rowIndex-1);
+            }
+            this.setMessage();
+            return tr;
+        }
         addRow(argumentList:any) {
+            if (arguments.length == 1 && typeof arguments[0] == "object") {
+                return this.addRowJSON(arguments[0]);
+            }
             let rowData = {};
             let args = arguments;
             if (arguments.length == 1 && arguments[0].constructor === Array) args = arguments[0];
@@ -556,7 +580,7 @@ namespace B {
             this.dataset.rows.push(rowData);
         
             let tr = this.preloadRowToTable(this.dataset.rows.length-1);
-            if ("IntersectionObserverXXX" in window) { 
+            if ("IntersectionObserver" in window) { 
                 this.rowWatcher.observe(tr); 
             } else {
                 this.renderRow(tr.rowIndex-1);

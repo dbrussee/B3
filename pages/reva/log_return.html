@@ -18,7 +18,7 @@
 </style>
 <script>
 function init() {
-    window.tblStats = new B.Table("tblStats", "tblStats", "stat,statdate,link", "status","statuses");
+    window.tblStats = new B.Table("tblStats", "tblStats", "stat,statdate,link", "item");
     tblStats.setTableHeight(250);
     tblStats.preRowRender = function(rownum,tr,tds,rd) {
         tds.link.className = "";
@@ -31,7 +31,7 @@ function init() {
     }
 
     tblStats.ondblclick = notcoded;
-    tblStats.footer.addButton("add", "Add", function() { openDialog("dlgNewStatus"); }, false);
+    tblStats.footer.addButton("add", "New Status", function() { openDialog("dlgNewStatus"); }, false);
     loadRows();
 
     window.drop = new B.DropdownMenu("mnuDrop", "nav", null, "<b>REVA Log Return</b>", 200);
@@ -134,13 +134,12 @@ function loadRows() {
     </div>
     </form>
 <form class='BDialog' id='dlgNewStatus' style='height:300px; width: 400px' title='New REVA Status'>
-    <div>
-        <ul>
-            <li onclick='notcoded()'>Missing</li> 
-            <li onclick='popDialog(); openDialog("dlgTerm");'>Terminating</li> 
-            <li onclick='notcoded()'>Accept</li> 
-            <li onclick='notcoded()'>Unaccept</li> 
-        </ul>
+    <div style='width:80%; text-align:center' class='centerme'>
+        <button disabled style='margin-bottom:.3em; width:110px' class='icon' onclick='notcoded()'><i class='material-icons'>pause</i><br>Research</button>
+        <button style='margin-bottom:.3em; width:110px' class='icon' onclick='notcoded()'><i class='material-icons'>help_outline</i><br>Missing</button>
+        <button style='margin-bottom:.3em; width:110px' class='icon' onclick='popDialog(); openDialog("dlgTerm");'><i class='material-icons'>cancel</i><br>Terminate</button>
+        <button style='margin-bottom:.3em; width:110px' class='icon' onclick='notcoded()'><i class='material-icons'>done_outline</i><br>Accept</button>
+        <button style='margin-bottom:.3em; width:110px' class='icon' onclick='notcoded()'><i class='material-icons'>cancel_presentation</i><br>Unaccept</button>
     </div>
     <button class='BDialogButton' onclick='popDialog()'>Cancel</button>
 </form>

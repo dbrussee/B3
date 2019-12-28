@@ -375,16 +375,16 @@ input:not([type]):disabled,
 textarea:disabled,
 input[type="password"]:disabled,
 input[type="text"]:disabled {
-  color: gray;
-  background-color: snow;
+  color: black;
+  background-color: lightgrey;
 }
 
-input:not([type]).required,
-textarea.required,
-input[type="password"].required,
-input[type="text"].required {
+input:not([type]):required:invalid,
+textarea:required:invalid,
+input[type="password"]:required:invalid,
+input[type="text"]:required:invalid {
   /*background-image: linear-gradient(45deg, transparent, transparent 50%, rgb(82, 82, 82) 50%, rgb(82, 82, 82) 100%);*/
-  background-image: linear-gradient(45deg, transparent, transparent 50%, blue 50%, blue 100%);
+  background-image: linear-gradient(45deg, transparent, transparent 50%, orange 50%, red 100%);
   background-position: top right;
   background-size: .6em .6em;
   background-repeat: no-repeat;
@@ -482,10 +482,33 @@ input[type="submit"].inline,
 input[type="reset"].inline,
 .BTableFooterButton.inline {
   font-size: .8em;
+  position: relative;
+  top: -.2em;
   padding-left: .3em;
   padding-right: .3em;
   padding-top: .05em;
   padding-bottom: .15em;
+}
+
+button.icon,
+input[type="submit"].icon,
+input[type="reset"].icon,
+.BTableFooterButton.icon {
+  line-height: 1em;
+}
+
+button.icon i,
+input[type="submit"].icon i,
+input[type="reset"].icon i,
+.BTableFooterButton.icon i {
+  font-size: 2em;
+}
+
+button.icon:hover i,
+input[type="submit"].icon:hover i,
+input[type="reset"].icon:hover i,
+.BTableFooterButton.icon:hover i {
+  text-shadow: 0 0 .2em white;
 }
 
 table.data {

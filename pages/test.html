@@ -18,7 +18,7 @@
             if (action == "DEL") return true;
             var chk = frm.get();
             if (chk.col1 == "") {
-                sayE("Column 1 must be entered!");
+                say("Column 1 must be entered!").error();
                 return false;
             }
         });
@@ -52,14 +52,14 @@
         var func = function(rslt) { say("You chose item " + rslt); }
         if (isChoose) {
             if (typ == "") choose(msg, title, btns, func).setSize(200,800);
-            if (typ == "G") chooseG(msg, title, btns, func);
-            if (typ == "W") chooseW(msg, title, btns, func);
-            if (typ == "E") chooseE(msg, title, btns, func);
+            if (typ == "G") choose(msg, title, btns, func).good();
+            if (typ == "W") choose(msg, title, btns, func).warn();
+            if (typ == "E") choose(msg, title, btns, func).error();
         } else {
             if (typ == "") ask(msg, title, func);
-            if (typ == "G") askG(msg, title, func);
-            if (typ == "W") askW(msg, title, func);
-            if (typ == "E") askE(msg, title, func);
+            if (typ == "G") ask(msg, title, func).good();
+            if (typ == "W") ask(msg, title, func).warn();
+            if (typ == "E") ask(msg, title, func).error();
         }
     }
     function getSomething(typ, asTextarea) {
@@ -70,9 +70,9 @@
         var title = "Got Beef?";
         var func = function(rslt) { say("You entered the value " + rslt); }
         if (typ == "") sayGet(msg, prompt, def, title, func, asTextarea);
-        if (typ == "G") sayGetG(msg, prompt, def, title, func, asTextarea, true);
-        if (typ == "W") sayGetW(msg, prompt, def, title, func, asTextarea);
-        if (typ == "E") sayGetE(msg, prompt, def, title, func, asTextarea);
+        if (typ == "G") sayGet(msg, prompt, def, title, func, asTextarea, true).good();
+        if (typ == "W") sayGet(msg, prompt, def, title, func, asTextarea).warn();
+        if (typ == "E") sayGet(msg, prompt, def, title, func, asTextarea).error();
     }
 
     function testFreeze() {
