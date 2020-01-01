@@ -298,7 +298,7 @@
   cursor: -webkit-grab;
   cursor: grab;
   color: white;
-  text-shadow: 1px 1px 1px black;
+  text-shadow: 1px 1px 1px #323232;
   padding-left: .5em;
   padding-top: .4em;
   padding-bottom: .4em;
@@ -361,8 +361,10 @@ select:disabled {
 
 input:not([type]),
 textarea,
-input[type="password"],
-input[type="text"] {
+input[type="password"], input[type="number"], input[type="date"],
+input[type="datetime-local"], input[type="email"], input[type="month"],
+input[type="tel"], input[type="time"], input[type="url"],
+input[type="week"], input[type="text"] {
   padding-left: .2em;
   padding-top: .15em;
   border-left: 0;
@@ -373,16 +375,20 @@ input[type="text"] {
 
 input:not([type]):disabled,
 textarea:disabled,
-input[type="password"]:disabled,
-input[type="text"]:disabled {
+input[type="password"]:disabled, input[type="number"]:disabled, input[type="date"]:disabled,
+input[type="datetime-local"]:disabled, input[type="email"]:disabled, input[type="month"]:disabled,
+input[type="tel"]:disabled, input[type="time"]:disabled, input[type="url"]:disabled,
+input[type="week"]:disabled, input[type="text"]:disabled {
   color: black;
   background-color: lightgrey;
 }
 
-input:not([type]):required:invalid,
-textarea:required:invalid,
-input[type="password"]:required:invalid,
-input[type="text"]:required:invalid {
+input:not([type]):invalid,
+textarea:invalid,
+input[type="password"]:invalid, input[type="number"]:invalid, input[type="date"]:invalid,
+input[type="datetime-local"]:invalid, input[type="email"]:invalid, input[type="month"]:invalid,
+input[type="tel"]:invalid, input[type="time"]:invalid, input[type="url"]:invalid,
+input[type="week"]:invalid, input[type="text"]:invalid {
   /*background-image: linear-gradient(45deg, transparent, transparent 50%, rgb(82, 82, 82) 50%, rgb(82, 82, 82) 100%);*/
   background-image: linear-gradient(45deg, transparent, transparent 50%, orange 50%, red 100%);
   background-position: top right;
@@ -392,8 +398,10 @@ input[type="text"]:required:invalid {
 
 input:not([type]).readonly,
 textarea.readonly,
-input[type="password"].readonly,
-input[type="text"].readonly {
+input[type="password"].readonly, input[type="number"].readonly, input[type="date"].readonly,
+input[type="datetime-local"].readonly, input[type="email"].readonly, input[type="month"].readonly,
+input[type="tel"].readonly, input[type="time"].readonly, input[type="url"].readonly,
+input[type="week"].readonly, input[type="text"].readonly {
   background-color: transparent;
 }
 
@@ -519,7 +527,7 @@ table.data tr th {
   border: 0;
   text-align: left;
   color: white;
-  text-shadow: 1px 1px 1px black;
+  text-shadow: 1px 1px 1px #323232;
   vertical-align: baseline;
   padding-left: .3em;
   padding-bottom: .25em;
@@ -567,7 +575,7 @@ table.form tr th {
   text-align: right;
   padding-left: .15em;
   padding-right: .3em;
-  padding-top: .15em;
+  padding-top: .3em;
   padding-bottom: .15em;
   vertical-align: middle;
   border: 0;
@@ -577,7 +585,7 @@ table.form tr th {
 table.form tr th.head {
   color: white;
   font-weight: normal;
-  text-shadow: 1px 1px 1px black;
+  text-shadow: 1px 1px 1px #323232;
   background-color: #0099cc;
   text-align: left;
   padding-left: .3em;
@@ -588,8 +596,8 @@ table.form tr th.head {
 
 table.form tr td {
   vertical-align: top;
-  padding-left: .15em;
-  padding-right: .15em;
+  padding-left: .05em;
+  padding-right: .05em;
   padding-top: .15em;
   padding-bottom: .15em;
 }
@@ -623,7 +631,7 @@ table.form tr.fancy th {
   padding-left: 1em;
   padding-right: 1em;
   text-align: center;
-  text-shadow: 2px 2px 2px black;
+  text-shadow: 2px 2px 2px #323232;
   border-top: .8em solid transparent;
   border-bottom: .4em solid transparent;
 }
@@ -671,27 +679,31 @@ table.form tr.fancy th {
 }
 
 ::-webkit-input-placeholder {
-  color: lightblue;
-  opacity: 1;
+  color: #0099cc;
+  opacity: .6;
   /* Firefox */
+  font-style: italic;
 }
 
 :-ms-input-placeholder {
-  color: lightblue;
-  opacity: 1;
+  color: #0099cc;
+  opacity: .6;
   /* Firefox */
+  font-style: italic;
 }
 
 ::-ms-input-placeholder {
-  color: lightblue;
-  opacity: 1;
+  color: #0099cc;
+  opacity: .6;
   /* Firefox */
+  font-style: italic;
 }
 
 ::placeholder {
-  color: lightblue;
-  opacity: 1;
+  color: #0099cc;
+  opacity: .6;
   /* Firefox */
+  font-style: italic;
 }
 
 table.BTable {
@@ -704,7 +716,7 @@ table.BTable tr th.th {
   color: white;
   font-weight: normal;
   padding: .25em;
-  text-shadow: 1px 1px 1px black;
+  text-shadow: 1px 1px 1px #323232;
 }
 
 table.BTable tbody tr.pickedRow,

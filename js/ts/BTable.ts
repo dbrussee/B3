@@ -413,9 +413,12 @@ namespace B {
                 let cname = this.dataset.columns[i];
                 params.push(chk[cname]);
             }
-            let rslt = this.onFormSave(frm, "NEW");
+            let rslt = frm.validate("NEW", this.onFormSave);
             if (rslt == undefined) rslt = true;
-            if (!rslt) return;
+            if (!rslt) {
+                say(this.getForm().getValidationIssues()).error();
+                return;
+            }
             this.addRow.apply(this, params);
             this.pickRow(this.table.rows.length-1);
             popDialog();
@@ -448,15 +451,19 @@ namespace B {
             }
         }
         saveRowChanges(frm:B.Form) {
+            let rslt = frm.validate("EDIT", this.onFormSave);
+            if (rslt == undefined) rslt = true;
+            if (!rslt) {
+                say(this.getForm().getValidationIssues()).error();
+                return;
+            }
             let rd = this.getDataRow(); if (rd == null) return;
             let chk = frm.get();
             for (let cname in this.dataset.columnNames) {
-                rd[cname] = chk[cname];
+                if (chk[cname] != null) {
+                    rd[cname] = chk[cname];
+                }
             }       
-            let rslt = this.onFormSave(frm, "NEW");
-            if (rslt == undefined) rslt = true;
-            if (!rslt) return;
-
             this.renderRow(this.pickedRow);
             popDialog();
             this.handleTrackedButtons();
@@ -493,7 +500,7 @@ namespace B {
             let btbl = this;
             let okToDelete = true;
             if (this.onFormSave != null) {
-                let okToDelete = this.onFormSave(null, "DEL");
+                let okToDelete = this.onFormSave(null, null, "DEL");
                 if (okToDelete == undefined) okToDelete = true;
             }
             if (!okToDelete) return;

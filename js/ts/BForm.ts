@@ -1,6 +1,6 @@
 /// <reference path="B.ts" />
 namespace B {
-    export function makeForm(id:string, allowSubmit:boolean=false) {
+    export function buildForm(id:string, allowSubmit:boolean=false) {
         return new Form(id, allowSubmit, true);
     }
     export function getForm(id:string, allowSubmit:boolean = false):Form {
@@ -15,8 +15,9 @@ namespace B {
         private form:HTMLFormElement = null;
         public static cache = {};
         public pairedTableId = "";
-        constructor(id:string, allowSubmit:boolean = false, forceMake:boolean=false) {
-            if (!forceMake) {
+        public validationResult = null;
+        constructor(id:string, allowSubmit:boolean = false, forceBuild:boolean=false) {
+            if (!forceBuild) {
                 if (Form.cache[id] != null) {
                     return Form.cache[id];
                 }
@@ -51,7 +52,7 @@ namespace B {
             let els = this.form.elements;
             for (let elnum = 0; elnum < els.length; elnum++) {
                 let el = els.item(elnum) as HTMLInputElement;
-                if (el.type == "" || el.type == "text" || el.type == "textarea") {
+                if (B.is.oneOf(el.type, ",text,textarea,number")) {
                     items[el.name] = el.value.trim();
                 } else if (el.type == "checkbox") {
                     items[el.name] = el.checked;
@@ -73,11 +74,16 @@ namespace B {
             return items;
         }
         getElement(field:string) {
-            return this.form.elements[field];
+            let els = this.form.elements[field];
+            let obj = { 
+                domElements:els[field],
+                type:els[0].type
+            }
+            return obj;
         }
         click(field:string) {
-            let el = this.getElement(field);
-            el.click();
+            let obj = this.getElement(field);
+            obj.domElements.click();
         }
         set(...args) {
             // Pairs of values set(name,val, name,val);
@@ -103,6 +109,97 @@ namespace B {
         }
         reset() {
             this.form.reset();
+        }
+        getValidationIssues() {
+            let rslt:string = "";
+            for (const key in this.validationResult) {
+                let itm = this.validationResult[key];
+                if (itm.issue != "") {
+                    rslt += "<li>" + itm.prompt + " " + itm.issue + "</li>";
+                }
+            }
+            if (rslt != "") rslt =  "<ul>" + rslt + "</ul>";
+            return rslt;
+        }
+        validate(action:string, validator:Function = null) {
+            let vdata = {};
+            let chk = this.get();
+            for (const key in chk) {
+                if (chk.hasOwnProperty(key)) {
+                    let el = this.form.elements[key] as HTMLFormElement;
+                    let itm = {
+                        field: key,
+                        value: chk[key],
+                        type: el.type,
+                        prompt: el.dataset["prompt"],
+                        required: el.hasAttribute("required"),
+                        minNumber: el.hasAttribute("min") ? el.getAttribute("min") : 0, 
+                        maxNumber: el.hasAttribute("max") ? el.getAttribute("max") : 0, 
+                        minLength: el.hasAttribute("minLength") ? parseInt(el.getAttribute("minLength")) : 0, 
+                        maxLength: el.hasAttribute("maxLength") ? parseInt(el.getAttribute("maxLength")) : 0,
+                        pattern: el.hasAttribute("pattern") ? el.getAttribute("pattern") : "",
+                        issue: ""
+                    }
+                    if (itm.type == undefined) itm.type = "text";
+                    if (itm.prompt == undefined) itm.prompt = el.getAttribute("prompt");
+                    if (itm.prompt == undefined) itm.prompt = "Field " + key;
+                    vdata[key] = itm;
+                    let minmaxIssue = false;
+                    let minmaxText = "";
+                    let patternIssue = false;
+                    if (itm.type == "number") {
+                        let val = parseInt(itm.value);
+                        if (itm.minNumber > 0 && itm.maxNumber > 0) {
+                            minmaxText = "must be between " + itm.minNumber + " and " + itm.maxNumber;
+                            minmaxIssue = val < itm.minNumber || val > itm.maxNumber;
+                        } else if (itm.minNumber > 0) {
+                            minmaxText = "must be >= " + itm.minNumber;
+                            minmaxIssue = val < itm.minNumber;
+                        } else if (itm.maxNumber > 0) {
+                            minmaxText = "must be <= " + itm.maxNumber;
+                            minmaxIssue = val > itm.maxNumber
+                        }
+                        if (isNaN(val)) minmaxIssue = true;
+                    } else {
+                        if (itm.minLength > 0 && itm.maxLength > 0) {
+                            if (itm.minLength == itm.maxLength) {
+                                minmaxText = "must be " + itm.minLength + " chars";
+                            } else {
+                                minmaxText = "must be between " + itm.minLength + " and " + itm.maxLength + " chars";
+                            }
+                            minmaxIssue = itm.value.length < itm.minLength || itm.value.length > itm.maxLength;
+                        } else if (itm.minLength > 0) {
+                            minmaxText = "must be >= " + itm.minLength + " chars";
+                            minmaxIssue = itm.value.length < itm.minLength;
+                        } else if (itm.maxLength > 0) {
+                            minmaxText = "must be <= " + itm.maxLength + " chars";
+                            minmaxIssue = itm.value.length > itm.maxLength;
+                        }
+                    }
+                    if (itm.required && itm.value == "") {
+                        let txt = "is required";
+                        if (minmaxIssue) txt += " and " + minmaxText ;
+                        itm.issue = txt;
+                    } else {
+                        if (minmaxIssue) itm.issue = minmaxText;
+                        if (itm.issue == "" && itm.pattern != "") {
+                            let patt = new RegExp(itm.pattern);
+                            let isMatch = patt.test(itm.value);
+                            if (!isMatch) {
+                                itm.issue = "is invalid";
+                            }
+                        }
+                    }
+                }
+            }
+            if (validator != null) validator(this, vdata, action);
+            this.validationResult = vdata;
+            let anyIssues = false;
+            for (const key in vdata){
+                let itm = vdata[key];
+                if (itm.issue != "") anyIssues = true;
+            }
+            return !anyIssues; // No issues = valid
         }
     }
 }

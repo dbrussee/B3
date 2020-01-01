@@ -11,12 +11,19 @@
 <script src='../js/B.js'></script>
 <script>
 function init() {
-    window.tblProsps = new B.Table("tblProspects", "tblProsps", "pid,gnam,qcnt", "prospect");
-    tblProsps.pairWithForm("dlgProsp", "AED", editProspect, null);
+    window.tblProsps = new B.Table("tblProspects", "tblProsps", "pid,grpnam,qcnt", "prospect");
+    tblProsps.pairWithForm("dlgProsp", "AED", editProspect, function(form, fields, action) {
+        if (action == "DEL") return true;
+        if (fields.einb.issue != "" || fields.eina.issue != "") {
+            fields.einb.issue = "";
+            fields.eina.issue = "must be 2 char and 10 char value";
+        }
+        if (fields.zip.issue != "") fields.zip.issue = "must be ##### or #####-#### format";
+    });
     tblProsps.setTableHeight(200);
     tblProsps.addRows([
-        {pid:"123456",gnam:"Test Prospect",qcnt:25},
-        {pid:"8723933",qcnt:1,gnam:"Example Large Group"}]);
+        {pid:"123456",grpnam:"Test Prospect",qcnt:25},
+        {pid:"8723933",qcnt:1,grpnam:"Example Large Group"}]);
 
     window.tblMonths = new B.Table("tblMonths", "tblMonths", "effdat,quoted,rated,pending,enrolled");
     tblMonths.setTableHeight(160);
@@ -52,16 +59,22 @@ function init() {
 
     window.dropNav = new B.DropdownMenu("mnuDrop", "nav", null, "<b>BlueQuote Home</b>", 200);
     dropNav.popup.addItem("reva", function() { top.loadPage("reva/reva_home.html") }, "autorenew", "REVA Home");
-    window.drop = new B.DropdownMenu("mnuDrop", "user", "person_outline", "User Profile", 200);
+    window.drop = new B.DropdownMenu("mnuDrop", "user", "person_outline", "User", 200);
     drop.popup.addItem("edt", function() { say("You clicked Edit Profile menu item."); }, "edit", "Edit profile...");
     drop.popup.addItem("itm1", function() { say("You clicked menu item 1"); }, "email", "Send feedback...");
     drop.popup.addSpace();
     drop.popup.addItem("itm2", function() { say("You cannot change your password from here").error(); }, "security", "Change Password...");
     drop.popup.addItem("itm3", function() { say("Just close the window to log out."); }, "cancel", "Logout...");
     window.dropP = new B.DropdownMenu("mnuDrop", "mnu2", "business", "Prospect", 250);
+    dropP.onDrop = function(mnu) {
+        var rd = tblProsps.getDataRow();
+        mnu.popup.items.edit.disable(rd == null);
+        mnu.popup.items.del.disable(rd == null);
+    }
     dropP.popup.addItem("srch", function() { searchProspect(); }, "search", "Search prospect...");
-    dropP.popup.addItem("itm1", editProspect, "add_circle_outline", "Create new prospect...");
-    dropP.popup.addItem("itm2", function() { say("You clicked the 2.2nd item"); }, "edit", "Edit prospect...");
+    dropP.popup.addItem("add", function() { tblProsps.formAdd(); }, "add_circle_outline", "Create new prospect...");
+    dropP.popup.addItem("edit", function() { tblProsps.formEdit(); }, "edit", "Edit prospect...");
+    dropP.popup.addItem("del", function() { tblProsps.formDelete(); }, "delete_forever", "Delete prospect...");
     window.dropQ = new B.DropdownMenu("mnuDrop", "mnuQ", "chat_bubble_outline", "Quote", 200);
     dropQ.popup.addItem("add", function() { say("You clicked the Add Quote link"); }, "note_add", "Add Quote...");
     dropQ.popup.addItem("cpy", function() { say("You clicked the Copy Quote link"); }, "file_copy", "Copy Quote...");
@@ -85,7 +98,7 @@ function editProspect(frm, kind) {
     frm.set("phone", B.format.phone("919-368-8124x"));
     if (B.is.oneOf(kind, "EDIT,COPY")) {
         var rd = tblProsps.getDataRow();
-        frm.set("grpnam", rd.gnam);
+        //frm.set("grpnam", rd.grpnam);
         if (kind == "EDIT") {
             B.Dialog.get("dlgProsp").setTitle("Prospect Details: #" + rd.pid);
         } else {
@@ -117,7 +130,7 @@ function editProspect(frm, kind) {
             <div style="max-width: 600px; z-index:0">
                 <table id='tblProspects' style='width:550px'>
                     <tr><th data='pid,90px,R'>Prospect</th>
-                        <th data='gnam,,L'>Group Name</th>
+                        <th data='grpnam,,L'>Group Name</th>
                         <th data='qcnt,90,R'>Quotes</th>
                     </tr>
                 </table>
@@ -128,26 +141,26 @@ function editProspect(frm, kind) {
 
     <form class='BDialog' id='dlgProsp' style='height:550px; width:700px;' title='Prospect Details'>
         <table class='form centerme' style='margin-top:.5em'>
-            <tr><th>Tax ID (EIN):</th><td><input name='eina' required maxlength="3" minlength="3" size='3'> &ndash; <input name='einb' required minlength="10" maxlength="3" size='10'></td></tr>
-            <tr><th>Group Name:</th><td><input name='grpnam' required size='50'></td></tr>
-            <tr><th>Address:</th><td><input name='addr1' required size='50'><td></td></tr>
-            <tr><th></th><td><input name='addr2' size='50'><td></td></tr>
+            <tr><th>Tax ID (EIN):</th><td><input prompt="Tax ID" name='eina' required maxlength="3" minlength="3" size='3'> &ndash; <input name='einb' required minlength="10" maxlength="10" size='11'></td></tr>
+            <tr><th>Group Name:</th><td><input prompt="Group name" name='grpnam' required size='50' maxlength="100"></td></tr>
+            <tr><th>Address:</th><td><input prompt="Address line 1" name='addr1' required size='50' maxlength="100"><td></td></tr>
+            <tr><th></th><td><input name='addr2' size='50' maxlength="100"><td></td></tr>
             <tr><th></th><td>
-                <input name='city' placeholder='City' required size='30'>
-                <input name='state' placeholder='ST' required size='3'>,
-                <input name='zip' placeholder='Zip' required size='12'>
+                <input name='city' prompt="City" placeholder='City' required size='30' maxlength="100">
+                <input name='state' prompt="State" placeholder='ST' value='NC' style='text-transform: uppercase;' required size='3' maxlength="2">,
+                <input name='zip' placeholder='Zip' required prompt="Zip" pattern="^[0-9]{5}(?:-[0-9]{4})?$" size='12' maxlength="10">
                 <td></td></tr>
             <tr><th>Contact:</th><td><input name='contact' size='50'></td></tr>
-            <tr><th>Email:</th><td><input name='email' size='50'></td></tr>
-            <tr><th></th><td style='color:navy'>Ph: <input name='phone' size='15'> x<input name='pext' size='5'>
-                    Fax: <input name='fax' size='15'></td></tr>
-            <tr><th>Employees:</th><td><input name='empcount' size='5' required></td></tr>
-            <tr><th>NAICS:</th><td><input name='naics' disabled required size='10' value='beef'> <button class='inline' onclick='pickNAICS()'>Pick...</button></td></tr>
+            <tr><th>Email:</th><td><input type='email' name='email' size='50'></td></tr>
+            <tr><th>Phone:</th><td style='color:navy'><input name='phone' size='17'> x<input name='pext' size='5'>
+                    Fax: <input name='fax' size='17'></td></tr>
+            <tr><th>Employees:</th><td><input type='number' prompt='Employee Count' name='empcount' size='5' min="51" max="99999"></td></tr>
+            <tr><th>NAICS:</th><td><input prompt="NAICS Code" name='naics' disabled size='10'> <button class='inline' onclick='pickNAICS()'>Pick...</button></td></tr>
             <tr><td colspan='2' style='padding-top: .6em;'>
                 <fieldset><legend>Other Information</legend>
                 <table class='form'>
                     <tr><th>Massachusetts:</th><td>
-                        <label class='chk'><input type='checkbox' name='mass'><i></i> check if compliance is required</label>
+                        <label class='chk'><input type='checkbox' name='mass'><i></i> <span style='font-style: italic'> check if compliance is required</span></label>
                     </td></tr>
 
                 </table>

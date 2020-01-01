@@ -8,6 +8,7 @@ namespace B {
         public enabled:boolean = true;
         public visible:boolean = true;
         public popup:PopupMenu = null;
+        public onDrop:Function = null;
         constructor(containerId:string, id:string, icon:string, title:string, width:number=0) {
             this.container = document.getElementById(containerId);
             this.element = document.createElement("div");
@@ -55,6 +56,7 @@ namespace B {
             }
 
             if (this.popup.visible) return;
+            if (this.onDrop != null) this.onDrop(this);
             this.popup.show(left, top);
         }
         hide() {

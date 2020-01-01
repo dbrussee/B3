@@ -60,7 +60,7 @@ namespace B {
 
             this.scrollbox = document.createElement("div");
             // Make room for a header and buttons
-            this.scrollbox.style.cssText = "min-height:calc(100% - 5.1em); overflow-x:hidden; overflow-y:auto";
+            this.scrollbox.style.cssText = "min-height:calc(100% - 5.1em); max-height:calc(100% - 5.1em); overflow-x:hidden; overflow-y:auto";
 
             this.content = document.createElement("div");
             this.scrollbox.appendChild(this.content);
@@ -391,9 +391,9 @@ function sayGet(msg:string, prompt:string, defaultValue:string, title:string="Sy
     let frm = B.getForm("B_SAY_DIALOG");
     frm.set("result", defaultValue);
     let tbox = frm.getElement("result");
-    tbox.focus();
-    tbox.select();
-    B.makeForm("B_SAY_DIALOG");
+    tbox.domElements.focus();
+    tbox.domElements.select();
+    B.buildForm("B_SAY_DIALOG");
     dlg.open().center();
     return dlg;
 }

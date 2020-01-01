@@ -43,6 +43,7 @@
 .BDialogButton {
     margin-left: .4em;
 }
+
 select {
     padding: {
         top: .1em;
@@ -65,8 +66,10 @@ select {
 }
 input:not([type]), 
 textarea,
-input[type="password"],
-input[type="text"] {
+input[type="password"], input[type="number"], input[type="date"],
+input[type="datetime-local"], input[type="email"], input[type="month"],
+input[type="tel"], input[type="time"], input[type="url"],
+input[type="week"], input[type="text"] {
     padding-left: .2em;
     padding-top: .15em;
     border: {
@@ -79,14 +82,12 @@ input[type="text"] {
         color: black;
         background-color: lightgrey;
     }
-    &:required {
-        &:invalid {
+    &:invalid {
         /*background-image: linear-gradient(45deg, transparent, transparent 50%, rgb(82, 82, 82) 50%, rgb(82, 82, 82) 100%);*/
         background-image: linear-gradient(45deg, transparent, transparent 50%, orange 50%, red 100%);
         background-position: top right;
         background-size: .6em .6em;
         background-repeat: no-repeat;
-        }
     }
     &.readonly {
         background-color: transparent;
@@ -204,7 +205,7 @@ table.form {
             text-align: right;
             padding: {
                 left: .15em; right: .3em;
-                top: .15em; bottom: .15em;
+                top: .3em; bottom: .15em;
             };
             vertical-align: middle;
             border: 0;
@@ -232,7 +233,7 @@ table.form {
                 /*margin-bottom: .25em;*/
             };
             padding: {
-                left: .15em; right: .15em;
+                left: .05em; right: .05em;
                 top: .15em; bottom: .15em;
             };
             &.instructions {
@@ -305,6 +306,7 @@ table.form {
 
 
 ::placeholder {
-    color: lightblue;
-    opacity: 1; /* Firefox */
+    color: $bcnc-bg;
+    opacity: .6; /* Firefox */
+    font-style: italic;
 }

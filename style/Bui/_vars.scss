@@ -4,8 +4,8 @@ $buttonGradientActive: linear-gradient(lightblue, lightblue);
 $buttonGradientDisabled: linear-gradient(ghostwhite, silver);
 $buttonGradientWarning: linear-gradient(ghostwhite, lightyellow);
 $popupGradient: linear-gradient(45deg, rgba(44, 42, 86, 0.8), rgba(0, 0, 0, .8));
-$tshadow: 2px 2px 2px black;
-$tshadow1: 1px 1px 1px black;
+$tshadow: 2px 2px 2px rgb(50, 50, 50);
+$tshadow1: 1px 1px 1px rgb(50, 50, 50);
 $bcnc-bg: #0099cc;
 $bcnc-pickedBackground: rgb(208, 236, 245); /*rgba(147, 213, 248,.5);*/
 $bcnc-pickedCellBackground: pink;

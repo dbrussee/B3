@@ -6,10 +6,10 @@ function notcoded() {
     say(h).error();
 }
 namespace B.is {
-    export function oneOf() {
+    export function oneOf(...args:any[]) {
         return B.util.whichOneOf.apply(null, arguments) >= 0;
     };
-    export function notOneOf() {
+    export function notOneOf(...args:any[]) {
         return B.util.whichOneOf.apply(null, arguments) < 0;
     };
 }
@@ -402,3 +402,12 @@ namespace B {
         }
     }
 }
+
+document.addEventListener('invalid', (function(){
+    return function(e){
+        //prevent the browser from showing default error bubble/ hint
+        e.preventDefault();
+        // optionally fire off some custom validation handler
+        // myvalidationfunction();
+    };
+})(), true);

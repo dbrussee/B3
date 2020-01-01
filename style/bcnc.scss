@@ -8,6 +8,9 @@ $h2: 1.125rem;
     margin: 0;
     box-sizing: border-box;
 }
+ul,ol {
+    margin-left: 1.1em;
+}
 body {
     height: 100%;
     width: 100%;
@@ -20,7 +23,8 @@ fieldset {
     padding-top: 0;
     legend {
         margin-left: .9em;
-        color: navy;
+        color: $bqbg;
+        /*text-shadow: 1px 1px 1px black;*/
         padding-left: .3em;
         padding-right: .3em;
     }

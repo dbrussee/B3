@@ -10,11 +10,19 @@ function notcoded() {
     var is;
     (function (is) {
         function oneOf() {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
             return B.util.whichOneOf.apply(null, arguments) >= 0;
         }
         is.oneOf = oneOf;
         ;
         function notOneOf() {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
             return B.util.whichOneOf.apply(null, arguments) < 0;
         }
         is.notOneOf = notOneOf;
@@ -510,6 +518,14 @@ function notcoded() {
     }());
     B.Timer = Timer;
 })(B || (B = {}));
+document.addEventListener('invalid', (function () {
+    return function (e) {
+        //prevent the browser from showing default error bubble/ hint
+        e.preventDefault();
+        // optionally fire off some custom validation handler
+        // myvalidationfunction();
+    };
+})(), true);
 /// <reference path="B.ts" />
 var B;
 /// <reference path="B.ts" />
@@ -567,7 +583,7 @@ var B;
             this.domObj.appendChild(titlebar);
             this.scrollbox = document.createElement("div");
             // Make room for a header and buttons
-            this.scrollbox.style.cssText = "min-height:calc(100% - 5.1em); overflow-x:hidden; overflow-y:auto";
+            this.scrollbox.style.cssText = "min-height:calc(100% - 5.1em); max-height:calc(100% - 5.1em); overflow-x:hidden; overflow-y:auto";
             this.content = document.createElement("div");
             this.scrollbox.appendChild(this.content);
             this.content.style.height = "";
@@ -931,9 +947,9 @@ function sayGet(msg, prompt, defaultValue, title, callback, inputAsTextarea, all
     var frm = B.getForm("B_SAY_DIALOG");
     frm.set("result", defaultValue);
     var tbox = frm.getElement("result");
-    tbox.focus();
-    tbox.select();
-    B.makeForm("B_SAY_DIALOG");
+    tbox.domElements.focus();
+    tbox.domElements.select();
+    B.buildForm("B_SAY_DIALOG");
     dlg.open().center();
     return dlg;
 }
@@ -962,11 +978,11 @@ function ask(msg, title, callback) {
 var B;
 /// <reference path="B.ts" />
 (function (B) {
-    function makeForm(id, allowSubmit) {
+    function buildForm(id, allowSubmit) {
         if (allowSubmit === void 0) { allowSubmit = false; }
         return new Form(id, allowSubmit, true);
     }
-    B.makeForm = makeForm;
+    B.buildForm = buildForm;
     function getForm(id, allowSubmit) {
         if (allowSubmit === void 0) { allowSubmit = false; }
         var frm = Form.cache[id];
@@ -977,13 +993,14 @@ var B;
     }
     B.getForm = getForm;
     var Form = /** @class */ (function () {
-        function Form(id, allowSubmit, forceMake) {
+        function Form(id, allowSubmit, forceBuild) {
             if (allowSubmit === void 0) { allowSubmit = false; }
-            if (forceMake === void 0) { forceMake = false; }
+            if (forceBuild === void 0) { forceBuild = false; }
             this.id = "";
             this.form = null;
             this.pairedTableId = "";
-            if (!forceMake) {
+            this.validationResult = null;
+            if (!forceBuild) {
                 if (Form.cache[id] != null) {
                     return Form.cache[id];
                 }
@@ -1017,7 +1034,7 @@ var B;
             var els = this.form.elements;
             for (var elnum = 0; elnum < els.length; elnum++) {
                 var el = els.item(elnum);
-                if (el.type == "" || el.type == "text" || el.type == "textarea") {
+                if (B.is.oneOf(el.type, ",text,textarea,number")) {
                     items[el.name] = el.value.trim();
                 }
                 else if (el.type == "checkbox") {
@@ -1045,11 +1062,16 @@ var B;
             return items;
         };
         Form.prototype.getElement = function (field) {
-            return this.form.elements[field];
+            var els = this.form.elements[field];
+            var obj = {
+                domElements: els[field],
+                type: els[0].type
+            };
+            return obj;
         };
         Form.prototype.click = function (field) {
-            var el = this.getElement(field);
-            el.click();
+            var obj = this.getElement(field);
+            obj.domElements.click();
         };
         Form.prototype.set = function () {
             var args = [];
@@ -1080,6 +1102,114 @@ var B;
         Form.prototype.reset = function () {
             this.form.reset();
         };
+        Form.prototype.getValidationIssues = function () {
+            var rslt = "";
+            for (var key in this.validationResult) {
+                var itm = this.validationResult[key];
+                if (itm.issue != "") {
+                    rslt += "<li>" + itm.prompt + " " + itm.issue + "</li>";
+                }
+            }
+            if (rslt != "")
+                rslt = "<ul>" + rslt + "</ul>";
+            return rslt;
+        };
+        Form.prototype.validate = function (action, validator) {
+            if (validator === void 0) { validator = null; }
+            var vdata = {};
+            var chk = this.get();
+            for (var key in chk) {
+                if (chk.hasOwnProperty(key)) {
+                    var el = this.form.elements[key];
+                    var itm = {
+                        field: key,
+                        value: chk[key],
+                        type: el.type,
+                        prompt: el.dataset["prompt"],
+                        required: el.hasAttribute("required"),
+                        minNumber: el.hasAttribute("min") ? el.getAttribute("min") : 0,
+                        maxNumber: el.hasAttribute("max") ? el.getAttribute("max") : 0,
+                        minLength: el.hasAttribute("minLength") ? parseInt(el.getAttribute("minLength")) : 0,
+                        maxLength: el.hasAttribute("maxLength") ? parseInt(el.getAttribute("maxLength")) : 0,
+                        pattern: el.hasAttribute("pattern") ? el.getAttribute("pattern") : "",
+                        issue: ""
+                    };
+                    if (itm.type == undefined)
+                        itm.type = "text";
+                    if (itm.prompt == undefined)
+                        itm.prompt = el.getAttribute("prompt");
+                    if (itm.prompt == undefined)
+                        itm.prompt = "Field " + key;
+                    vdata[key] = itm;
+                    var minmaxIssue = false;
+                    var minmaxText = "";
+                    var patternIssue = false;
+                    if (itm.type == "number") {
+                        var val = parseInt(itm.value);
+                        if (itm.minNumber > 0 && itm.maxNumber > 0) {
+                            minmaxText = "must be between " + itm.minNumber + " and " + itm.maxNumber;
+                            minmaxIssue = val < itm.minNumber || val > itm.maxNumber;
+                        }
+                        else if (itm.minNumber > 0) {
+                            minmaxText = "must be >= " + itm.minNumber;
+                            minmaxIssue = val < itm.minNumber;
+                        }
+                        else if (itm.maxNumber > 0) {
+                            minmaxText = "must be <= " + itm.maxNumber;
+                            minmaxIssue = val > itm.maxNumber;
+                        }
+                        if (isNaN(val))
+                            minmaxIssue = true;
+                    }
+                    else {
+                        if (itm.minLength > 0 && itm.maxLength > 0) {
+                            if (itm.minLength == itm.maxLength) {
+                                minmaxText = "must be " + itm.minLength + " chars";
+                            }
+                            else {
+                                minmaxText = "must be between " + itm.minLength + " and " + itm.maxLength + " chars";
+                            }
+                            minmaxIssue = itm.value.length < itm.minLength || itm.value.length > itm.maxLength;
+                        }
+                        else if (itm.minLength > 0) {
+                            minmaxText = "must be >= " + itm.minLength + " chars";
+                            minmaxIssue = itm.value.length < itm.minLength;
+                        }
+                        else if (itm.maxLength > 0) {
+                            minmaxText = "must be <= " + itm.maxLength + " chars";
+                            minmaxIssue = itm.value.length > itm.maxLength;
+                        }
+                    }
+                    if (itm.required && itm.value == "") {
+                        var txt = "is required";
+                        if (minmaxIssue)
+                            txt += " and " + minmaxText;
+                        itm.issue = txt;
+                    }
+                    else {
+                        if (minmaxIssue)
+                            itm.issue = minmaxText;
+                        if (itm.issue == "" && itm.pattern != "") {
+                            var patt = new RegExp(itm.pattern);
+                            var isMatch = patt.test(itm.value);
+                            if (!isMatch) {
+                                itm.issue = "is invalid";
+                            }
+                        }
+                    }
+                }
+            }
+            if (validator != null)
+                validator(this, vdata, action);
+            this.validationResult = vdata;
+            var anyIssues = false;
+            for (var key in vdata) {
+                var itm = vdata[key];
+                if (itm.issue != "")
+                    anyIssues = true;
+            }
+            return !anyIssues; // No issues = valid
+        };
         Form.cache = {};
         return Form;
     }());
@@ -1097,6 +1227,7 @@ var B;
             this.enabled = true;
             this.visible = true;
             this.popup = null;
+            this.onDrop = null;
             this.container = document.getElementById(containerId);
             this.element = document.createElement("div");
             this.element.setAttribute("data-BDROPDOWN", id);
@@ -1144,6 +1275,8 @@ var B;
             }
             if (this.popup.visible)
                 return;
+            if (this.onDrop != null)
+                this.onDrop(this);
             this.popup.show(left, top);
         };
         DropdownMenu.prototype.hide = function () {
@@ -1868,11 +2001,13 @@ var B;
                 var cname = this.dataset.columns[i];
                 params.push(chk[cname]);
             }
-            var rslt = this.onFormSave(frm, "NEW");
+            var rslt = frm.validate("NEW", this.onFormSave);
             if (rslt == undefined)
                 rslt = true;
-            if (!rslt)
+            if (!rslt) {
+                say(this.getForm().getValidationIssues()).error();
                 return;
+            }
             this.addRow.apply(this, params);
             this.pickRow(this.table.rows.length - 1);
             popDialog();
@@ -1911,18 +2046,22 @@ var B;
             }
         };
         Table.prototype.saveRowChanges = function (frm) {
+            var rslt = frm.validate("EDIT", this.onFormSave);
+            if (rslt == undefined)
+                rslt = true;
+            if (!rslt) {
+                say(this.getForm().getValidationIssues()).error();
+                return;
+            }
             var rd = this.getDataRow();
             if (rd == null)
                 return;
             var chk = frm.get();
             for (var cname in this.dataset.columnNames) {
-                rd[cname] = chk[cname];
+                if (chk[cname] != null) {
+                    rd[cname] = chk[cname];
+                }
             }
-            var rslt = this.onFormSave(frm, "NEW");
-            if (rslt == undefined)
-                rslt = true;
-            if (!rslt)
-                return;
             this.renderRow(this.pickedRow);
             popDialog();
             this.handleTrackedButtons();
@@ -1964,7 +2103,7 @@ var B;
             var btbl = this;
             var okToDelete = true;
             if (this.onFormSave != null) {
-                var okToDelete_1 = this.onFormSave(null, "DEL");
+                var okToDelete_1 = this.onFormSave(null, null, "DEL");
                 if (okToDelete_1 == undefined)
                     okToDelete_1 = true;
             }
