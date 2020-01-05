@@ -89,8 +89,11 @@ input[type="week"], input[type="text"] {
         background-size: .6em .6em;
         background-repeat: no-repeat;
     }
-    &.readonly {
+    &:read-only {
         background-color: transparent;
+        display: inline-block !important;
+        border: 0 !important;
+        color: darkslategray;
     }
 }
 textarea {

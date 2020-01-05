@@ -396,13 +396,28 @@ input[type="week"]:invalid, input[type="text"]:invalid {
   background-repeat: no-repeat;
 }
 
-input:not([type]).readonly,
-textarea.readonly,
-input[type="password"].readonly, input[type="number"].readonly, input[type="date"].readonly,
-input[type="datetime-local"].readonly, input[type="email"].readonly, input[type="month"].readonly,
-input[type="tel"].readonly, input[type="time"].readonly, input[type="url"].readonly,
-input[type="week"].readonly, input[type="text"].readonly {
+input:not([type]):-moz-read-only,
+textarea:-moz-read-only,
+input[type="password"]:-moz-read-only, input[type="number"]:-moz-read-only, input[type="date"]:-moz-read-only,
+input[type="datetime-local"]:-moz-read-only, input[type="email"]:-moz-read-only, input[type="month"]:-moz-read-only,
+input[type="tel"]:-moz-read-only, input[type="time"]:-moz-read-only, input[type="url"]:-moz-read-only,
+input[type="week"]:-moz-read-only, input[type="text"]:-moz-read-only {
   background-color: transparent;
+  display: inline-block !important;
+  border: 0 !important;
+  color: darkslategray;
+}
+
+input:not([type]):read-only,
+textarea:read-only,
+input[type="password"]:read-only, input[type="number"]:read-only, input[type="date"]:read-only,
+input[type="datetime-local"]:read-only, input[type="email"]:read-only, input[type="month"]:read-only,
+input[type="tel"]:read-only, input[type="time"]:read-only, input[type="url"]:read-only,
+input[type="week"]:read-only, input[type="text"]:read-only {
+  background-color: transparent;
+  display: inline-block !important;
+  border: 0 !important;
+  color: darkslategray;
 }
 
 textarea {
@@ -736,6 +751,10 @@ table.BTable tbody tr td {
   border-bottom: .5px solid silver;
 }
 
+.BFooterMessageContainer, .BFooterMessageContainer * {
+  font-size: .8rem;
+}
+
 /*
 div.BTableScrollingContainer::-webkit-scrollbar {
     -webkit-appearance: none;
@@ -787,6 +806,10 @@ body {
 .centerme {
   position: relative;
   margin: 0 auto;
+}
+
+.highlight {
+  text-shadow: 0 0 6px pink, 0 0 3px yellow;
 }
 
 .loader {

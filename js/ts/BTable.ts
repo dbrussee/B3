@@ -55,9 +55,10 @@ namespace B {
         private tbody = null;
         private tfoot = null;
         private pairedFormId:string = null;
+        private pairedFormBaseTitle:string = "";
         private onFormFill:Function = null;
         private onFormSave:Function = null;
-    
+        private sourceRowCount = -1; // show xxx of yyyy rows?
         public columns = {};
         public columnList = [];
         public anyHeaders = false;
@@ -213,6 +214,7 @@ namespace B {
             this.footerButtonContainer = tr.insertCell(-1);
             this.footerButtonContainer.style.cssText = "vertical-align:middle";
             this.footerMessageContainer = tr.insertCell(-1);
+            this.footerMessageContainer.className = "BFooterMessageContainer";
             this.footerMessageContainer.style.cssText = "text-align:right; width:30%; font-size:.8em;";
             this.footerBox.appendChild(table);
 
@@ -352,6 +354,7 @@ namespace B {
 
         pairWithForm(formId:string, supportedActions:string = "AECD", onFormFill:Function = null, onFormSave:Function = null) {
             this.pairedFormId = formId;
+            this.pairedFormBaseTitle = B.Dialog.get(formId).getTitle();
             this.onFormFill = onFormFill;
             this.onFormSave = onFormSave;
 
@@ -387,6 +390,7 @@ namespace B {
         formAdd() {
             if (this.pairedFormId == null) return;
             let dlg = B.Dialog.get(this.pairedFormId);
+            dlg.setTitle(this.pairedFormBaseTitle + " (Add)");
             let frm = this.getForm(); if (frm == null) return;
             frm.pairedTableId = this.id;
             frm.reset();
@@ -427,13 +431,17 @@ namespace B {
         formEdit() {
             if (this.pairedFormId == null) return;
             let dlg = B.Dialog.get(this.pairedFormId);
+            dlg.setTitle(this.pairedFormBaseTitle + " (Ediit)");
             let rd = this.getDataRow(); if (rd == null) return;
             let frm = this.getForm(); if (frm == null) return;
             frm.pairedTableId = this.id;
             frm.reset();
-            for (let cname in this.dataset.columnNames) {
+            for (let cname in rd) {
                 frm.set(cname, rd[cname]);
             }
+            //for (let cname in this.dataset.columnNames) {
+            //    frm.set(cname, rd[cname]);
+            //}
             let okToOpen = true;
             if (this.onFormFill != null) {
                 okToOpen = this.onFormFill(frm, "EDIT");
@@ -471,6 +479,7 @@ namespace B {
         formCopy() {
             if (this.pairedFormId == null) return;
             let dlg = B.Dialog.get(this.pairedFormId);
+            dlg.setTitle(this.pairedFormBaseTitle + " (Copy)");
             let rd = this.getDataRow(); if (rd == null) return;
             let frm = this.getForm(); if (frm == null) return;
             frm.pairedTableId = this.id;
@@ -538,8 +547,11 @@ namespace B {
             return (rownum == null ? null : this.tbody.rows[rownum]);
         }
         clear() {
+            this.unpick();
             this.dataset.rows = [];
             while (this.table.rows.length > 1) this.table.deleteRow(1);
+            this.setMessage();
+            this.handleTrackedButtons();
         }
         addRowsJSON(list:JSON[]) {
             for (let i = 0; i < list.length; i++) {
@@ -568,9 +580,9 @@ namespace B {
             return tr;
         }
         addRow(argumentList:any) {
-            if (arguments.length == 1 && typeof arguments[0] == "object") {
-                return this.addRowJSON(arguments[0]);
-            }
+            //if (arguments.length == 1 && typeof arguments[0] == "object") {
+            //    return this.addRowJSON(arguments[0]);
+            //}
             let rowData = {};
             let args = arguments;
             if (arguments.length == 1 && arguments[0].constructor === Array) args = arguments[0];
@@ -596,21 +608,29 @@ namespace B {
             return tr;
         }
         setMessage(msg:string="") {
+            if (this.rowCountTitle2 == "") {
+                this.rowCountTitle2 = this.rowCountTitle + "s";
+            }
             if (msg == "") {
                 let count = this.dataset.rows.length;
-                if (count == 1) {
-                    this.footerMessageContainer.innerHTML = count + " " + this.rowCountTitle;
+                if (count == 0) {
+                    this.footerMessageContainer.innerHTML = "No " + this.rowCountTitle2;
+                } else if (count == 1) {
+                    this.footerMessageContainer.innerHTML = "1 " + this.rowCountTitle;
                 } else {
-                    if (this.rowCountTitle2 == "") {
-                        this.rowCountTitle2 = this.rowCountTitle + "s";
-                    }
                     msg = B.format.numberWithCommas(count);
-                    if (msg == "0") msg = "No";
+                    if (this.sourceRowCount > count) {
+                        msg += " of <span class='highlight'>" + B.format.numberWithCommas(this.sourceRowCount) + "</span>";
+                    }
                     this.footerMessageContainer.innerHTML = msg + " " + this.rowCountTitle2;
                 }
             } else {
                 this.footerMessageContainer.innerHTML = msg;
             }
+        }
+        setSourceRowCount(count:number) {
+            this.sourceRowCount = count;
+            this.setMessage();
         }
         preloadRowToTable(rownum:number) {
             let tr = document.createElement("tr");

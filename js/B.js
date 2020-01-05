@@ -638,8 +638,12 @@ var B;
             this.title.innerHTML = html;
             return this;
         };
+        Dialog.prototype.getTitle = function () {
+            return this.title.innerHTML;
+        };
         Dialog.prototype.reset = function () {
-            this.form.reset();
+            if (this.form != null)
+                this.form.reset();
             return this;
         };
         Dialog.prototype.setBottomMessage = function (html) {
@@ -691,6 +695,7 @@ var B;
         Dialog.prototype.good = function () { this.domObj.style.backgroundColor = "aquamarine"; return this; };
         Dialog.prototype.warning = function () { this.domObj.style.backgroundColor = "lightyellow"; return this; };
         Dialog.prototype.error = function () { this.domObj.style.backgroundColor = "lightpink"; return this; };
+        Dialog.prototype.bad = function () { this.domObj.style.backgroundColor = "lightpink"; return this; };
         Dialog.prototype.close = function () {
             if (!this.isOpen)
                 return;
@@ -971,7 +976,13 @@ function choose(msg, title, buttons, callback, bgcolor) {
     return dlg;
 }
 function ask(msg, title, callback) {
-    if (title === void 0) { title = "System Message"; }
+    if (typeof title == "string") {
+        // All is well... nothing to do here
+    }
+    else {
+        callback = title;
+        title = "System Message";
+    }
     return choose(msg, title, "Yes=YES|No=NO", callback, "");
 }
 /// <reference path="B.ts" />
@@ -1042,7 +1053,12 @@ var B;
                 }
                 else if (el.type == "select-one") {
                     var sel = els.item(elnum);
-                    items[el.name] = sel.options[sel.selectedIndex].value.trim();
+                    if (sel.selectedIndex >= 0) {
+                        items[el.name] = sel.options[sel.selectedIndex].value.trim();
+                    }
+                    else {
+                        items[el.name] = null;
+                    }
                 }
                 else if (el.type == "select-multiple") {
                     var sel = els.item(elnum);
@@ -1624,8 +1640,10 @@ var B;
             this.tbody = null;
             this.tfoot = null;
             this.pairedFormId = null;
+            this.pairedFormBaseTitle = "";
             this.onFormFill = null;
             this.onFormSave = null;
+            this.sourceRowCount = -1; // show xxx of yyyy rows?
             this.columns = {};
             this.columnList = [];
             this.anyHeaders = false;
@@ -1772,6 +1790,7 @@ var B;
             this.footerButtonContainer = tr.insertCell(-1);
             this.footerButtonContainer.style.cssText = "vertical-align:middle";
             this.footerMessageContainer = tr.insertCell(-1);
+            this.footerMessageContainer.className = "BFooterMessageContainer";
             this.footerMessageContainer.style.cssText = "text-align:right; width:30%; font-size:.8em;";
             this.footerBox.appendChild(table);
             this.footerMessageContainer.innerHTML = "&nbsp;";
@@ -1938,6 +1957,7 @@ var B;
             if (onFormFill === void 0) { onFormFill = null; }
             if (onFormSave === void 0) { onFormSave = null; }
             this.pairedFormId = formId;
+            this.pairedFormBaseTitle = B.Dialog.get(formId).getTitle();
             this.onFormFill = onFormFill;
             this.onFormSave = onFormSave;
             if (supportedActions.indexOf("A") >= 0) {
@@ -1972,6 +1992,7 @@ var B;
             if (this.pairedFormId == null)
                 return;
             var dlg = B.Dialog.get(this.pairedFormId);
+            dlg.setTitle(this.pairedFormBaseTitle + " (Add)");
             var frm = this.getForm();
             if (frm == null)
                 return;
@@ -2017,6 +2038,7 @@ var B;
             if (this.pairedFormId == null)
                 return;
             var dlg = B.Dialog.get(this.pairedFormId);
+            dlg.setTitle(this.pairedFormBaseTitle + " (Ediit)");
             var rd = this.getDataRow();
             if (rd == null)
                 return;
@@ -2025,9 +2047,12 @@ var B;
                 return;
             frm.pairedTableId = this.id;
             frm.reset();
-            for (var cname in this.dataset.columnNames) {
+            for (var cname in rd) {
                 frm.set(cname, rd[cname]);
             }
+            //for (let cname in this.dataset.columnNames) {
+            //    frm.set(cname, rd[cname]);
+            //}
             var okToOpen = true;
             if (this.onFormFill != null) {
                 okToOpen = this.onFormFill(frm, "EDIT");
@@ -2070,6 +2095,7 @@ var B;
             if (this.pairedFormId == null)
                 return;
             var dlg = B.Dialog.get(this.pairedFormId);
+            dlg.setTitle(this.pairedFormBaseTitle + " (Copy)");
             var rd = this.getDataRow();
             if (rd == null)
                 return;
@@ -2147,9 +2173,12 @@ var B;
             return (rownum == null ? null : this.tbody.rows[rownum]);
         };
         Table.prototype.clear = function () {
+            this.unpick();
             this.dataset.rows = [];
             while (this.table.rows.length > 1)
                 this.table.deleteRow(1);
+            this.setMessage();
+            this.handleTrackedButtons();
         };
         Table.prototype.addRowsJSON = function (list) {
             for (var i = 0; i < list.length; i++) {
@@ -2180,9 +2209,9 @@ var B;
             return tr;
         };
         Table.prototype.addRow = function (argumentList) {
-            if (arguments.length == 1 && typeof arguments[0] == "object") {
-                return this.addRowJSON(arguments[0]);
-            }
+            //if (arguments.length == 1 && typeof arguments[0] == "object") {
+            //    return this.addRowJSON(arguments[0]);
+            //}
             var rowData = {};
             var args = arguments;
             if (arguments.length == 1 && arguments[0].constructor === Array)
@@ -2211,24 +2240,32 @@ var B;
         };
         Table.prototype.setMessage = function (msg) {
             if (msg === void 0) { msg = ""; }
+            if (this.rowCountTitle2 == "") {
+                this.rowCountTitle2 = this.rowCountTitle + "s";
+            }
             if (msg == "") {
                 var count = this.dataset.rows.length;
-                if (count == 1) {
-                    this.footerMessageContainer.innerHTML = count + " " + this.rowCountTitle;
+                if (count == 0) {
+                    this.footerMessageContainer.innerHTML = "No " + this.rowCountTitle2;
+                }
+                else if (count == 1) {
+                    this.footerMessageContainer.innerHTML = "1 " + this.rowCountTitle;
                 }
                 else {
-                    if (this.rowCountTitle2 == "") {
-                        this.rowCountTitle2 = this.rowCountTitle + "s";
-                    }
                     msg = B.format.numberWithCommas(count);
-                    if (msg == "0")
-                        msg = "No";
+                    if (this.sourceRowCount > count) {
+                        msg += " of <span class='highlight'>" + B.format.numberWithCommas(this.sourceRowCount) + "</span>";
+                    }
                     this.footerMessageContainer.innerHTML = msg + " " + this.rowCountTitle2;
                 }
             }
             else {
                 this.footerMessageContainer.innerHTML = msg;
             }
+        };
+        Table.prototype.setSourceRowCount = function (count) {
+            this.sourceRowCount = count;
+            this.setMessage();
         };
         Table.prototype.preloadRowToTable = function (rownum) {
             var tr = document.createElement("tr");

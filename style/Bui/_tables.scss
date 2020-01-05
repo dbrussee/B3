@@ -27,6 +27,9 @@ table.BTable {
         }
     }
 }
+.BFooterMessageContainer, .BFooterMessageContainer * {
+    font-size: .8rem;
+}
 /*
 div.BTableScrollingContainer::-webkit-scrollbar {
     -webkit-appearance: none;

@@ -118,8 +118,11 @@ namespace B {
             this.title.innerHTML = html;
             return this;
         }
+        getTitle():string {
+            return this.title.innerHTML;
+        }
         reset():B.Dialog {
-            this.form.reset();
+            if (this.form != null) this.form.reset();
             return this;
         }
         setBottomMessage(html:string="") {
@@ -166,6 +169,7 @@ namespace B {
         good() { this.domObj.style.backgroundColor = "aquamarine"; return this; }
         warning() { this.domObj.style.backgroundColor = "lightyellow"; return this; }
         error() { this.domObj.style.backgroundColor = "lightpink"; return this; }
+        bad() { this.domObj.style.backgroundColor = "lightpink"; return this; }
         close():B.Dialog {
             if (!this.isOpen) return;
             this.isOpen = false;
@@ -414,6 +418,12 @@ function choose(msg:string, title:string="System Message", buttons:string, callb
     return dlg;
 }
 
-function ask(msg:string, title:string="System Message", callback:CallableFunction) {
+function ask(msg:string, title:string|CallableFunction, callback:CallableFunction) {
+    if (typeof title == "string") {
+        // All is well... nothing to do here
+    } else {
+        callback = title;
+        title = "System Message";
+    }
     return choose(msg, title, "Yes=YES|No=NO", callback, "");
 }

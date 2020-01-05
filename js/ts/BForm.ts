@@ -57,8 +57,12 @@ namespace B {
                 } else if (el.type == "checkbox") {
                     items[el.name] = el.checked;
                 } else if (el.type == "select-one") {
-                    let sel = els.item(elnum) as HTMLSelectElement
-                    items[el.name] = sel.options[sel.selectedIndex].value.trim();
+                    let sel = els.item(elnum) as HTMLSelectElement;
+                    if (sel.selectedIndex >= 0) {
+                        items[el.name] = sel.options[sel.selectedIndex].value.trim();
+                    } else {
+                        items[el.name] = null;
+                    }
                 } else if (el.type == "select-multiple") {
                     let sel = els.item(elnum) as HTMLSelectElement
                     let sels = [];
