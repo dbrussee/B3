@@ -809,7 +809,7 @@ body {
 }
 
 .highlight {
-  text-shadow: 0 0 6px pink, 0 0 3px yellow;
+  text-shadow: 0 0 6px yellow;
 }
 
 .loader {

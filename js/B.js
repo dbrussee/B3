@@ -1008,7 +1008,6 @@ var B;
             if (allowSubmit === void 0) { allowSubmit = false; }
             if (forceBuild === void 0) { forceBuild = false; }
             this.id = "";
-            this.form = null;
             this.pairedTableId = "";
             this.validationResult = null;
             if (!forceBuild) {
@@ -1017,15 +1016,15 @@ var B;
                 }
             }
             this.id = id;
-            this.form = document.forms.namedItem(id);
+            var form = document.forms.namedItem(id);
             if (!allowSubmit) {
-                this.form.onsubmit = function (event) {
+                form.onsubmit = function (event) {
                     event.preventDefault();
                     return false;
                 };
             }
-            for (var i = 0; i < this.form.elements.length; i++) {
-                var el = this.form.elements.item(i);
+            for (var i = 0; i < form.elements.length; i++) {
+                var el = form.elements.item(i);
                 if (el.type == "textarea" && el.className.indexOf("ALLOWTABS") >= 0) {
                     el.onkeydown = function (e) {
                         if (e.keyCode == 9 || e.which == 9) {
@@ -1042,17 +1041,18 @@ var B;
         }
         Form.prototype.get = function () {
             var items = {};
-            var els = this.form.elements;
-            for (var elnum = 0; elnum < els.length; elnum++) {
-                var el = els.item(elnum);
-                if (B.is.oneOf(el.type, ",text,textarea,number")) {
+            var form = document.getElementById(this.id);
+            var els = new FormData(form);
+            for (var elname in els) {
+                var el = els[elname];
+                if (B.is.oneOf(el.type, ",text,textarea,number,hidden")) {
                     items[el.name] = el.value.trim();
                 }
                 else if (el.type == "checkbox") {
                     items[el.name] = el.checked;
                 }
                 else if (el.type == "select-one") {
-                    var sel = els.item(elnum);
+                    var sel = els[elname];
                     if (sel.selectedIndex >= 0) {
                         items[el.name] = sel.options[sel.selectedIndex].value.trim();
                     }
@@ -1061,7 +1061,7 @@ var B;
                     }
                 }
                 else if (el.type == "select-multiple") {
-                    var sel = els.item(elnum);
+                    var sel = els[elname];
                     var sels = [];
                     for (var optnum = 0; optnum = sel.options.length; optnum++) {
                         var opt = sel.options[optnum];
@@ -1078,7 +1078,8 @@ var B;
             return items;
         };
         Form.prototype.getElement = function (field) {
-            var els = this.form.elements[field];
+            var form = document.getElementById(this.id);
+            var els = form.elements[field];
             var obj = {
                 domElements: els[field],
                 type: els[0].type
@@ -1095,14 +1096,23 @@ var B;
                 args[_i] = arguments[_i];
             }
             // Pairs of values set(name,val, name,val);
+            var form = document.getElementById(this.id);
             for (var argnum = 0; argnum < args.length; argnum += 2) {
                 var field = args[argnum];
-                if (args.length <= argnum + 1)
-                    return;
-                var val = args[argnum + 1];
-                var el = this.form.elements[field];
+                if (field == null)
+                    continue;
+                var val = "";
+                if (args.length <= argnum + 1) {
+                    val = "";
+                }
+                else {
+                    val = args[argnum + 1];
+                }
+                var el = form.elements[field];
                 if (el != null) {
                     if (el.type == "checkbox") {
+                        if (typeof val == "string")
+                            val = (val.toUpperCase() == "Y");
                         el.checked = val;
                     }
                     else {
@@ -1116,7 +1126,8 @@ var B;
         Form.prototype.thaw = function () {
         };
         Form.prototype.reset = function () {
-            this.form.reset();
+            var form = document.getElementById(this.id);
+            form.reset();
         };
         Form.prototype.getValidationIssues = function () {
             var rslt = "";
@@ -1132,11 +1143,12 @@ var B;
         };
         Form.prototype.validate = function (action, validator) {
             if (validator === void 0) { validator = null; }
+            var form = document.getElementById(this.id);
             var vdata = {};
             var chk = this.get();
             for (var key in chk) {
                 if (chk.hasOwnProperty(key)) {
-                    var el = this.form.elements[key];
+                    var el = form.elements[key];
                     var itm = {
                         field: key,
                         value: chk[key],
@@ -1508,7 +1520,24 @@ var B;
             }
             for (var i = 0; i < arguments.length; i += 2) {
                 var key = arguments[i].trim().toUpperCase();
-                this.params[key.toUpperCase()] = arguments[i + 1];
+                this.params[key] = arguments[i + 1];
+            }
+            return this;
+        };
+        RemoteMethod.prototype.getParameter = function (key) {
+            return this.params[key];
+        };
+        RemoteMethod.prototype.setResult = function () {
+            if (arguments.length == 1) { // Pass in a collection?
+                var args = arguments[0];
+                for (var itm in args) {
+                    var key = itm.trim().toUpperCase();
+                    this.results[key] = args[itm];
+                }
+            }
+            for (var i = 0; i < arguments.length; i += 2) {
+                var key = arguments[i].trim().toUpperCase();
+                this.results[key] = arguments[i + 1];
             }
             return this;
         };
@@ -1516,7 +1545,7 @@ var B;
             return this.results[key.toUpperCase()];
         };
         RemoteMethod.prototype.run = function () {
-            this.setParameter.apply(null, arguments);
+            this.setParameter.call(null, arguments);
             this.aborted = false;
             this.timings.start = new Date();
             this.timings.end = null;

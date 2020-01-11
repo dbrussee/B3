@@ -72,7 +72,24 @@ namespace B {
             }
             for (let i = 0; i < arguments.length; i+=2) {
                 let key = arguments[i].trim().toUpperCase();
-                this.params[key.toUpperCase()] = arguments[i+1];
+                this.params[key] = arguments[i+1];
+            }
+            return this;
+        }
+        getParameter(key:string) {
+            return this.params[key];
+        }
+        setResult() {
+            if (arguments.length == 1) { // Pass in a collection?
+                let args = arguments[0];
+                for (let itm in args) {
+                    let key = itm.trim().toUpperCase();
+                    this.results[key] = args[itm]; 
+                }
+            }
+            for (let i = 0; i < arguments.length; i+=2) {
+                let key = arguments[i].trim().toUpperCase();
+                this.results[key] = arguments[i+1];
             }
             return this;
         }
@@ -80,7 +97,7 @@ namespace B {
             return this.results[key.toUpperCase()];
         }
         run() {
-            this.setParameter.apply(null, arguments);
+            this.setParameter.call(null, arguments);
 
             this.aborted = false;
             this.timings.start = new Date();

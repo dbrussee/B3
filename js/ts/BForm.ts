@@ -12,7 +12,6 @@ namespace B {
     }
     export class Form {
         private id:string = "";
-        private form:HTMLFormElement = null;
         public static cache = {};
         public pairedTableId = "";
         public validationResult = null;
@@ -23,16 +22,16 @@ namespace B {
                 }
             }
             this.id = id;
-            this.form = document.forms.namedItem(id);
+            let form = document.forms.namedItem(id);
             if (!allowSubmit) {
-                this.form.onsubmit = function(event:any) {
+                form.onsubmit = function(event:any) {
                     event.preventDefault();
                     return false;
                 }
             }
 
-            for (let i = 0; i < this.form.elements.length; i++) {
-                var el = this.form.elements.item(i) as HTMLFormElement;
+            for (let i = 0; i < form.elements.length; i++) {
+                var el = form.elements.item(i) as HTMLFormElement;
                 if (el.type == "textarea" && el.className.indexOf("ALLOWTABS") >= 0) {
                     el.onkeydown = function(e){
                         if(e.keyCode==9 || e.which==9){
@@ -49,22 +48,23 @@ namespace B {
         }
         get() {
             let items = {};
-            let els = this.form.elements;
-            for (let elnum = 0; elnum < els.length; elnum++) {
-                let el = els.item(elnum) as HTMLInputElement;
-                if (B.is.oneOf(el.type, ",text,textarea,number")) {
+            let form = document.getElementById(this.id) as HTMLFormElement;
+            let els = new FormData(form);
+            for (let elname in els) {
+                let el = els[elname] as HTMLInputElement;
+                if (B.is.oneOf(el.type, ",text,textarea,number,hidden")) {
                     items[el.name] = el.value.trim();
                 } else if (el.type == "checkbox") {
                     items[el.name] = el.checked;
                 } else if (el.type == "select-one") {
-                    let sel = els.item(elnum) as HTMLSelectElement;
+                    let sel = els[elname] as HTMLSelectElement;
                     if (sel.selectedIndex >= 0) {
                         items[el.name] = sel.options[sel.selectedIndex].value.trim();
                     } else {
                         items[el.name] = null;
                     }
                 } else if (el.type == "select-multiple") {
-                    let sel = els.item(elnum) as HTMLSelectElement
+                    let sel = els[elname] as HTMLSelectElement;
                     let sels = [];
                     for (let optnum = 0; optnum = sel.options.length; optnum++) {
                         let opt = sel.options[optnum];
@@ -78,7 +78,8 @@ namespace B {
             return items;
         }
         getElement(field:string) {
-            let els = this.form.elements[field];
+            let form = document.getElementById(this.id) as HTMLFormElement;
+            let els = form.elements[field];
             let obj = { 
                 domElements:els[field],
                 type:els[0].type
@@ -91,13 +92,20 @@ namespace B {
         }
         set(...args) {
             // Pairs of values set(name,val, name,val);
+            let form = document.getElementById(this.id) as HTMLFormElement;
             for (let argnum = 0; argnum < args.length; argnum+=2) {
                 let field = args[argnum];
-                if (args.length <= argnum+1) return;
-                let val = args[argnum+1];
-                let el = this.form.elements[field] as HTMLInputElement;
+                if (field == null) continue;
+                let val:any = "";
+                if (args.length <= argnum+1) {
+                    val = "";
+                } else {
+                    val = args[argnum+1];
+                }
+                let el = form.elements[field] as HTMLInputElement;
                 if (el != null) {
                     if (el.type == "checkbox") {
+                        if (typeof val == "string") val = (val.toUpperCase() == "Y");
                         el.checked = val;
                     } else {
                         el.value = val;
@@ -112,7 +120,8 @@ namespace B {
 
         }
         reset() {
-            this.form.reset();
+            let form = document.getElementById(this.id) as HTMLFormElement;
+            form.reset();
         }
         getValidationIssues() {
             let rslt:string = "";
@@ -126,11 +135,12 @@ namespace B {
             return rslt;
         }
         validate(action:string, validator:Function = null) {
+            let form = document.getElementById(this.id) as HTMLFormElement;
             let vdata = {};
             let chk = this.get();
             for (const key in chk) {
                 if (chk.hasOwnProperty(key)) {
-                    let el = this.form.elements[key] as HTMLFormElement;
+                    let el = form.elements[key] as HTMLFormElement;
                     let itm = {
                         field: key,
                         value: chk[key],
